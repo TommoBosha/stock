@@ -13,13 +13,14 @@ export default function ProductForm({
     images: existingImages,
     category: assignedCategory,
     properties: assignedProperties,
-    productIndex: existingProductIndex
+    productIndex: existingProductIndex,
+    tag: existingTag
 }) {
     const [title, setTitle] = useState(existingTitle || "");
     const [productIndex, setProductIndex] = useState(existingProductIndex || '');
     const [description, setDescription] = useState(existingDescriptoin || "");
     const [category, setCategory] = useState(assignedCategory || '');
-    const [tag, setTag] = useState('');
+    const [tag, setTag] = useState(existingTag || '');
     const [productProperties, setProductProperties] = useState(assignedProperties || {});
     const [price, setPrice] = useState(existingPrice || 0);
     const [goToProducts, setGoToProducts] = useState(false);
@@ -102,6 +103,10 @@ export default function ProductForm({
             return newProductProps;
         });
     }
+
+    function removeImage(imageUrl) {
+        setImages((oldImages) => oldImages.filter((image) => image !== imageUrl));
+    }
     return (
         <form onSubmit={saveProduct}>
             <label> Назва товара</label>
@@ -169,9 +174,17 @@ export default function ProductForm({
                     className="flex flex-wrap gap-1"
                 >
                     {!!images?.length && images.map(link => (
-                        <div key={link} className="h-24">
-
+                        <div key={link} className="h-24 relative">
                             <img src={link} alt="" className="rounded-lg" />
+                            <button
+                                onClick={() => removeImage(link)}
+                                className="absolute top-1 right-1  text-black rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+
+                            </button>
                         </div>
                     ))}
                 </ReactSortable>
