@@ -19,6 +19,7 @@ export default function ProductForm({
     const [productIndex, setProductIndex] = useState(existingProductIndex || '');
     const [description, setDescription] = useState(existingDescriptoin || "");
     const [category, setCategory] = useState(assignedCategory || '');
+    const [tag, setTag] = useState('');
     const [productProperties, setProductProperties] = useState(assignedProperties || {});
     const [price, setPrice] = useState(existingPrice || 0);
     const [goToProducts, setGoToProducts] = useState(false);
@@ -36,8 +37,14 @@ export default function ProductForm({
     async function saveProduct(e) {
         e.preventDefault();
         const data = {
-            title, description, price, images, category,
-            properties: productProperties, productIndex,
+            title,
+            description,
+            price,
+            images,
+            category,
+            properties: productProperties,
+            productIndex,
+            tag,
         };
 
         if (_id) {
@@ -112,6 +119,16 @@ export default function ProductForm({
                 value={productIndex}
                 onChange={(e) => setProductIndex(+e.target.value)}
             />
+
+            <label>Тег</label>
+            <select
+                onChange={(e) => setTag(e.target.value)}
+                value={tag}
+            >
+                <option value="">Без тегу</option>
+                <option value="NEW">NEW</option>
+                <option value="Top">Top</option>
+            </select>
 
             <label>Категорія</label>
             <select

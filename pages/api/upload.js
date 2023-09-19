@@ -2,6 +2,7 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { mongooseConnect } from '@/lib/mongoose';
+import { isAdminRequest } from './auth/[...nextauth]';
 
 const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
 
@@ -25,6 +26,7 @@ const upload = multer({ storage: cloudinaryStorage });
 
 export default async function handle(req, res) {
     await mongooseConnect();
+    await isAdminRequest(res, req);
 
     try {
         const uploader = async (path) => cloudinary.uploader.upload(path);
