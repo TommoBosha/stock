@@ -14,13 +14,15 @@ export default function ProductForm({
     category: assignedCategory,
     properties: assignedProperties,
     productIndex: existingProductIndex,
-    tag: existingTag
+    tag: existingTag,
+    countInStock: existingCountInStock,
 }) {
     const [title, setTitle] = useState(existingTitle || "");
     const [productIndex, setProductIndex] = useState(existingProductIndex || '');
     const [description, setDescription] = useState(existingDescriptoin || "");
     const [category, setCategory] = useState(assignedCategory || '');
     const [tag, setTag] = useState(existingTag || '');
+    const [countInStock, setCountInStock] = useState(existingCountInStock || '');
     const [productProperties, setProductProperties] = useState(assignedProperties || {});
     const [price, setPrice] = useState(existingPrice || 0);
     const [goToProducts, setGoToProducts] = useState(false);
@@ -46,6 +48,7 @@ export default function ProductForm({
             properties: productProperties,
             productIndex,
             tag,
+            countInStock,
         };
 
         if (_id) {
@@ -134,6 +137,14 @@ export default function ProductForm({
                 <option value="NEW">NEW</option>
                 <option value="Top">Top</option>
             </select>
+
+            <label> Кількість товара</label>
+            <input
+                type="text"
+                placeholder="Кількість товара"
+                value={countInStock}
+                onChange={(e) => setCountInStock(+e.target.value)}
+            />
 
             <label>Категорія</label>
             <select
