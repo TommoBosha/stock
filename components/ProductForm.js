@@ -16,12 +16,14 @@ export default function ProductForm({
     productIndex: existingProductIndex,
     tag: existingTag,
     countInStock: existingCountInStock,
+    slug: existingSlug,
 }) {
     const [title, setTitle] = useState(existingTitle || "");
     const [productIndex, setProductIndex] = useState(existingProductIndex || '');
     const [description, setDescription] = useState(existingDescriptoin || "");
     const [category, setCategory] = useState(assignedCategory || '');
     const [tag, setTag] = useState(existingTag || '');
+    const [slug, setSlug] = useState(existingSlug || '');
     const [countInStock, setCountInStock] = useState(existingCountInStock || '');
     const [productProperties, setProductProperties] = useState(assignedProperties || {});
     const [price, setPrice] = useState(existingPrice || 0);
@@ -49,6 +51,7 @@ export default function ProductForm({
             productIndex,
             tag,
             countInStock,
+            slug,
         };
 
         if (_id) {
@@ -118,6 +121,14 @@ export default function ProductForm({
                 placeholder="Назва товара"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+            />
+
+            <label> Slug</label>
+            <input
+                type="text"
+                placeholder="приклад: braslet-paracord-black"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
             />
 
             <label> Код товара</label>

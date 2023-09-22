@@ -10,6 +10,7 @@ const ProductSchema = new Schema({
     properties: { type: Object },
     tag: { type: Object },
     countInStock: { type: Number, required: true },
+    slug: { type: String, required: true },
 },
     {
         timestamps: true,
