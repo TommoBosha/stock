@@ -19,6 +19,9 @@ const cloudinaryStorage = new CloudinaryStorage({
         allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
         use_filename: true,
         unique_filename: true,
+        overlay: 'водяной_знак_frwonl',
+        width: '750',
+        gravity: 'center',
     },
 });
 
