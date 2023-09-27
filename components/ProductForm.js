@@ -147,7 +147,7 @@ export default function ProductForm({
                 <option value="">Без тегу</option>
                 <option value="NEW">NEW</option>
                 <option value="Top">Top</option>
-                <option value="Video">Відео</option>
+                <option value="Sale">Sale</option>
             </select>
 
             <label> Кількість товара</label>
