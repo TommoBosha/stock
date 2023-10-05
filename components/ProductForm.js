@@ -35,6 +35,7 @@ export default function ProductForm({
 
     useEffect(() => {
         axios.get('/api/categories').then(result => {
+            console.log(result.data);
             setCategories(result.data);
         })
     }, [])
@@ -113,6 +114,22 @@ export default function ProductForm({
     function removeImage(imageUrl) {
         setImages((oldImages) => oldImages.filter((image) => image !== imageUrl));
     }
+
+    function getCategoryHierarchy(categoryId, categories) {
+        const category = categories.find(cat => cat._id === categoryId);
+        if (!category) {
+            return [];
+        }
+
+        const hierarchy = [category];
+        if (category.parent) {
+            const parentHierarchy = getCategoryHierarchy(category.parent._id, categories);
+            hierarchy.unshift(...parentHierarchy);
+        }
+
+        return hierarchy;
+    }
+
     return (
         <form onSubmit={saveProduct}>
             <label> Назва товара</label>
@@ -159,20 +176,15 @@ export default function ProductForm({
             />
 
             <label>Категорія</label>
-            <select
-                onChange={e => setCategory(e.target.value)}
-                value={category}>
-                <option value="">
-                    Без категорії
-                </option>
+            <select onChange={e => setCategory(e.target.value)} value={category}>
+                <option value="">Без категорії</option>
                 {categories.length > 0 && categories.map(c => (
-                    <option
-                        value={c._id}
-                        key={c._id}>
-                        {c.name}
+                    <option key={c._id} value={c._id}>
+                        {getCategoryHierarchy(c._id, categories).map(cat => cat.name).join(' > ')}
                     </option>
                 ))}
             </select>
+
             {propertiesToFill.length > 0 && propertiesToFill.map(p => (
                 <div key={p.value} className="flex gap-1">
                     <div>{p.name}</div>

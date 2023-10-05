@@ -1,4 +1,4 @@
-import mongoose, { model, models, Schema } from "mongoose";
+import { model, models, Schema } from "mongoose";
 
 const CurrencySchema = new Schema({
     currency: { type: String, required: true },
