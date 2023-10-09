@@ -162,7 +162,7 @@ export default function ProductForm({
                 value={tag}
             >
                 <option value="">Без тегу</option>
-                <option value="NEW">NEW</option>
+                <option value="NEW">New</option>
                 <option value="Top">Top</option>
                 <option value="Sale">Sale</option>
             </select>
