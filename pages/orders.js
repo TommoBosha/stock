@@ -59,6 +59,7 @@ export default function OrdersPage() {
             {orders.length > 0 &&
               orders.map((order) => (
                 <tr key={order._id}>
+                  {console.log(orders)}
                   <td className="w-[100px]">{new Date(order.createdAt).toLocaleString()}</td>
                   <td>{order._id}</td>
                   <td
@@ -83,12 +84,13 @@ export default function OrdersPage() {
                     <br />
                     {order.shippingAddress.deliveryMethod}
                     <br />
-                    {order.shippingAddress.city}{" "}
+                    
                     {order.shippingAddress.cityName}{" "}
-                    {order.shippingAddress.postalCode}{" "}
-                    {order.shippingAddress.country}
+                    {order.shippingAddress.postCode}{" "}
+                    {order.shippingAddress.country}{" "}
+                    {order.shippingAddress.city}{" "}
                     <br />
-                    {order.shippingAddress.streetAddress}{" "}
+                    {order.shippingAddress.address}{" "}
                     {order.shippingAddress.warehouses}
                     <br />
                     <p
