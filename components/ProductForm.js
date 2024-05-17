@@ -1,74 +1,51 @@
-/* eslint-disable @next/next/no-img-element */
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import Spinner from "./Spinner";
-import { ReactSortable } from "react-sortablejs";
 
 export default function ProductForm({
     _id,
-    title: existingTitle,
-    description: existingDescriptoin,
-    price: existingPrice,
+    name: existingName,
+    components: existingComponents,
+    agent: existingAgent,
+    assemblyPrice: existingAssemblyPrice,
     images: existingImages,
-    category: assignedCategory,
-    properties: assignedProperties,
-    productIndex: existingProductIndex,
-    tag: existingTag,
-    countInStock: existingCountInStock,
-    slug: existingSlug,
 }) {
-    const [title, setTitle] = useState(existingTitle || "");
-    const [productIndex, setProductIndex] = useState(existingProductIndex || '');
-    const [description, setDescription] = useState(existingDescriptoin || "");
-    const [category, setCategory] = useState(assignedCategory || '');
-    const [tag, setTag] = useState(existingTag || '');
-    const [slug, setSlug] = useState(existingSlug || '');
-    const [countInStock, setCountInStock] = useState(existingCountInStock || '');
-    const [productProperties, setProductProperties] = useState(assignedProperties || {});
-    const [price, setPrice] = useState(existingPrice || 0);
-    const [goToProducts, setGoToProducts] = useState(false);
-    const [isUploding, setIsUploading] = useState(false);
+    const [name, setName] = useState(existingName || "");
+    const [components, setComponents] = useState(existingComponents || [{ _id: "", name: "", quantity: "" }]);
+    const [agent, setAgent] = useState(existingAgent || "");
+    const [assemblyPrice, setAssemblyPrice] = useState(existingAssemblyPrice || "");
     const [images, setImages] = useState(existingImages || []);
-    const [categories, setCategories] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [availableComponents, setAvailableComponents] = useState([]);
+
     const router = useRouter();
 
     useEffect(() => {
-        axios.get('/api/categories').then(result => {
-            
-            setCategories(result.data);
-        })
-    }, [])
+        axios.get('/api/components').then(result => {
+            setAvailableComponents(result.data.map(comp => comp.name));
+        });
+    }, []);
 
     async function saveProduct(e) {
         e.preventDefault();
         const data = {
-            title,
-            description,
-            price,
+            name,
+            components,
+            agent,
+            assemblyPrice,
             images,
-            category,
-            properties: productProperties,
-            productIndex,
-            tag,
-            countInStock,
-            slug,
         };
 
         if (_id) {
-            
             await axios.put("/api/products", { ...data, _id });
         } else {
-            
             await axios.post("/api/products", data);
         }
-        setGoToProducts(true);
-    }
-    if (goToProducts) {
         router.push("/products");
     }
 
-    async function uploadImages(e) {
+    async function uploadImage(e) {
         const files = e.target?.files;
         if (files?.length > 0) {
             setIsUploading(true);
@@ -78,9 +55,7 @@ export default function ProductForm({
             }
             try {
                 const res = await axios.post("/api/upload", data);
-                setImages((oldImages) => {
-                    return [...oldImages, ...res.data.links];
-                });
+                setImages((oldImages) => [...oldImages, ...res.data.links]);
             } catch (error) {
                 console.error('Помилка завантаження файлів:', error);
             } finally {
@@ -88,188 +63,88 @@ export default function ProductForm({
             }
         }
     }
-    function updateImagesOrder(images) {
-        setImages(images);
+
+    function addComponent() {
+        setComponents(prevComponents => [...prevComponents, { _id: "", name: "", quantity: "" }]);
     }
 
-    const propertiesToFill = [];
-    if (categories.length > 0 && category) {
-        let catInfo = categories.find(({ _id }) => _id === category);
-        propertiesToFill.push(...catInfo.properties);
-        while (catInfo?.parent?._id) {
-            const parentCat = categories.find(({ _id }) => _id === catInfo?.parent?._id);
-            propertiesToFill.push(...parentCat.properties);
-            catInfo = parentCat;
-        }
+    function removeComponent(index) {
+        setComponents(prevComponents => prevComponents.filter((_, i) => i !== index));
     }
 
-    function setProductProp(propName, value) {
-        setProductProperties(prev => {
-            const newProductProps = { ...prev };
-            newProductProps[propName] = value;
-            return newProductProps;
+    function updateComponent(index, key, value) {
+        setComponents(prevComponents => {
+            const newComponents = [...prevComponents];
+            newComponents[index][key] = value;
+            return newComponents;
         });
-    }
-
-    function removeImage(imageUrl) {
-        setImages((oldImages) => oldImages.filter((image) => image !== imageUrl));
-    }
-
-    function getCategoryHierarchy(categoryId, categories) {
-        const category = categories.find(cat => cat._id === categoryId);
-        if (!category) {
-            return [];
-        }
-
-        const hierarchy = [category];
-        if (category.parent) {
-            const parentHierarchy = getCategoryHierarchy(category.parent._id, categories);
-            hierarchy.unshift(...parentHierarchy);
-        }
-
-        return hierarchy;
     }
 
     return (
         <form onSubmit={saveProduct}>
-            <label> Назва товара</label>
+            <label>Назва продукту</label>
             <input
                 type="text"
-                placeholder="Назва товара"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
             />
+            <h2>Комплектуючі</h2>
+            {components.map((component, index) => (
+                <div key={index}>
+                    <input
+                        type="text"
+                        placeholder="Введіть назву компонента"
+                        value={component.name}
+                        onChange={(e) => updateComponent(index, "name", e.target.value)}
+                        list={`componentsList${index}`}
+                    />
+                    <datalist id={`componentsList${index}`}>
+                        {availableComponents.map((comp, idx) => (
+                            <option key={idx} value={comp} />
+                        ))}
+                    </datalist>
 
-            <label> Slug</label>
-            <input
-                type="text"
-                placeholder="приклад: braslet-paracord-black"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-            />
+                    <input
+                        type="text"
+                        placeholder="Кількість"
+                        value={component.quantity}
+                        onChange={(e) => updateComponent(index, "quantity", +e.target.value)}
+                    />
 
-            <label> Код товара</label>
-            <input
-                type="text"
-                placeholder="Код товара"
-                value={productIndex}
-                onChange={(e) => setProductIndex(e.target.value)}
-            />
-
-            <label>Тег</label>
-            <select
-                onChange={(e) => setTag(e.target.value)}
-                value={tag}
-            >
-                <option value="">Без тегу</option>
-                <option value="NEW">New</option>
-                <option value="Top">Top</option>
-                <option value="Sale">Sale</option>
-            </select>
-
-            <label> Кількість товара</label>
-            <input
-                type="text"
-                placeholder="Кількість товара"
-                value={countInStock}
-                onChange={(e) => setCountInStock(+e.target.value)}
-            />
-
-            <label>Категорія</label>
-            <select onChange={e => setCategory(e.target.value)} value={category}>
-                <option value="">Без категорії</option>
-                {categories.length > 0 && categories.map(c => (
-                    <option key={c._id} value={c._id}>
-                        {getCategoryHierarchy(c._id, categories).map(cat => cat.name).join(' > ')}
-                    </option>
-                ))}
-            </select>
-
-            {propertiesToFill.length > 0 && propertiesToFill.map(p => (
-                <div key={p.value} className="flex gap-1">
-                    <div>{p.name}</div>
-                    <select
-                        value={productProperties[p.name]}
-                        onChange={e => setProductProp(p.name, e.target.value)}>
-                        {
-                            p.values.map(v => (
-                                <option key={v} value={v}>{v}</option>
-                            ))
-                        }
-                    </select>
-                </div>
-            ))
-            }
-
-            <label>Зображення</label>
-            <div className="mb-2 flex flex-wrap gap-1">
-                <ReactSortable
-                    list={images}
-                    setList={updateImagesOrder}
-                    className="flex flex-wrap gap-1"
-                >
-                    {!!images?.length && images.map(link => (
-                        <div key={link} className="h-24 relative">
-                            <img src={link} alt="" className="rounded-lg" />
-                            <button
-                                onClick={() => removeImage(link)}
-                                className="absolute top-1 right-1  text-black rounded-full w-6 h-6 flex items-center justify-center cursor-pointer"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-
-                            </button>
-                        </div>
-                    ))}
-                </ReactSortable>
-                {isUploding && (
-                    <div className="h-24 flex items-center">
-                        <Spinner />
+                    <div className="flex flex-row gap-4 py-4">
+                        <button className="btn-default" type="button" onClick={() => removeComponent(index)}>Видалити</button>
+                        <button className="btn-default" type="button" onClick={addComponent}>Додати компонент</button>
                     </div>
-                )}
-                <label className="w-24 h-24 text-center flex items-center justify-center text-sm gap-1 text-gray-500 rounded-lg bg-gray-200 flex-col cursor-pointer">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3V15"
-                        />
-                    </svg>
-                    <div>Завантажити</div>
-                    <input type="file" name="file" onChange={uploadImages} className="hidden" multiple />
-                </label>
+                </div>
+            ))}
 
-            </div>
 
-            <label>Опис товара</label>
-            <textarea
-                placeholder="Опис товара"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-            />
 
-            <label>Ціна в $</label>
+
+            <label>Посередник</label>
             <input
                 type="text"
-                placeholder="Ціна"
-                value={price}
-                onChange={(e) => setPrice(+e.target.value)}
+                value={agent}
+                onChange={(e) => setAgent(e.target.value)}
             />
 
-            <button
-                type="submit"
-                className="btn-promary rounded-sm bg-blue-900 text-white px-4 py-1  shadow-sm"
-            >
-                Зберегти
-            </button>
-        </form >
+            <label>Ціна зборки</label>
+            <input
+                type="text"
+                value={assemblyPrice}
+                onChange={(e) => setAssemblyPrice(+e.target.value)}
+            />
+
+            <label>Фото товару</label>
+            <input
+                type="file"
+                onChange={uploadImage}
+                multiple
+            />
+
+            {isUploading && <Spinner />}
+
+            <button className="btn-default" type="submit">Зберегти</button>
+        </form>
     );
 }

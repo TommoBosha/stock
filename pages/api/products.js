@@ -1,6 +1,22 @@
 import { mongooseConnect } from "@/lib/mongoose";
-import { Product } from "@/models/product";
 import { isAdminRequest } from "./auth/[...nextauth]";
+import { Product } from "@/models/Product";
+import { Components } from "@/models/Components";
+
+async function convertComponentNamesToIds(components) {
+    const componentIds = [];
+    if (!Array.isArray(components)) {
+        return componentIds;
+    }
+    for (const component of components) {
+        const { _id, name, quantity } = component;
+        const componentInfo = await Components.findOne({ name });
+        if (componentInfo) {
+            componentIds.push({ _id: componentInfo._id, name, quantity });
+        }
+    }
+    return componentIds;
+}
 
 export default async function handler(req, res) {
     const { method } = req;
@@ -17,68 +33,66 @@ export default async function handler(req, res) {
 
     if (method === "POST") {
         const {
-            title,
-            description,
-            price,
-            images,
-            category,
-            properties,
-            productIndex,
-            tag,
-            countInStock,
-            slug,
+            name,
+            components,
+            agent,
+            assemblyPrice,
+            images
         } = req.body;
+
+        const componentIds = await convertComponentNamesToIds(components);
+
         const productDoc = await Product.create({
-            title,
-            description,
-            price,
-            images,
-            category,
-            properties,
-            productIndex,
-            tag,
-            countInStock,
-            slug,
+            name,
+            components: componentIds,
+            agent,
+            assemblyPrice,
+            images
         });
         res.json(productDoc);
     }
 
     if (method === "PUT") {
-        const {
-            title,
-            description,
-            price,
-            images,
-            category,
-            properties,
-            productIndex,
-            tag,
-            countInStock,
-            slug,
-            _id,
-        } = req.body;
-        await Product.updateOne(
-            { _id },
-            {
-                title,
-                description,
-                price,
+        try {
+            const {
+                name,
+                components,
+                agent,
+                assemblyPrice,
                 images,
-                category,
-                properties,
-                productIndex,
-                tag,
-                countInStock,
-                slug,
-            }
-        );
-        res.json(true);
+
+                _id,
+            } = req.body;
+
+            const productDoc = await Product.findOneAndUpdate(
+
+                { _id },
+                {
+                    name,
+                    components,
+                    agent,
+                    assemblyPrice,
+                    images,
+                },
+                { new: true }
+            );
+            res.json(productDoc);
+        } catch (error) {
+            res.status(500).json({ error: "Помилка при оновленні продукту" });
+        }
     }
 
     if (method === "DELETE") {
-        if (req.query?.id) {
-            await Product.deleteOne({ _id: req.query?.id });
-            res.json(true);
+        if (req.query.id) {
+            try {
+                await Product.deleteOne({ _id: req.query.id });
+                res.json(true);
+            } catch (error) {
+                console.error("Помилка при видаленні продукту:", error);
+                res.status(500).json({ error: "Помилка при видаленні продукту" });
+            }
+        } else {
+            res.status(400).json({ error: "Не вказано ID продукту для видалення" });
         }
     }
 }

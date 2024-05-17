@@ -5,6 +5,31 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+          "primary": "#546A83",
+          "secondary": "#D2DBEA",
+          "accent": "#18C0C1",
+          "neutral": "#3d4451",
+          "base-100": "#ffffff",
+          ".btn-save": {
+            "background-color": "#18C0C1",
+            "border-color": "#1EA1F1",
+            "border-radius": "0.375rem",
+            "padding-right": " 16px",
+            "padding-left": " 16px",
+            "padding-top": " 4px",
+            "padding-bottom": " 4px",
+          },
+        },
+      },
+      "dark",
+      "cupcake",
+    ],
+  },
+
   theme: {
     extend: {
       backgroundImage: {
@@ -12,7 +37,17 @@ module.exports = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+      backgroundColor: {
+        primary: '#546A83',
+        secondary: '#D2DBEA',
+        accent: '#18C0C1'
+      },
+      textColor: {
+        primary: '#546A83',
+        secondary: '#D2DBEA',
+        accent: '#18C0C1'
+      }
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 }

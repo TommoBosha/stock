@@ -19,7 +19,6 @@ const cloudinaryStorage = new CloudinaryStorage({
         allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
         use_filename: true,
         unique_filename: true,
-        overlay: 'водяной_знак_frwonl',
         width: '750',
         gravity: 'center',
     },
@@ -33,7 +32,7 @@ export default async function handle(req, res) {
 
     try {
         const uploader = async (path) => cloudinary.uploader.upload(path);
-        const uploadMiddleware = upload.array('file', 10); // Максимальна кількість файлів і їх поле
+        const uploadMiddleware = upload.array('file', 10);
 
         uploadMiddleware(req, res, async (err) => {
             if (err) {
