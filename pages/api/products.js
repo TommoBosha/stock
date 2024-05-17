@@ -1,7 +1,8 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { isAdminRequest } from "./auth/[...nextauth]";
-import { Product } from "@/models/Product";
+
 import { Components } from "@/models/Components";
+import { Product } from "@/models/Product";
 
 async function convertComponentNamesToIds(components) {
     const componentIds = [];
