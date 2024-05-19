@@ -108,9 +108,9 @@ const Invoices = ({ swal }) => {
               onChange={handleFilterTypeChange}
               className="mr-2 border rounded px-2 py-1"
             >
-              <option value="company">Назвою компанії</option>
-              <option value="date">Датою</option>
-              <option value="invoiceNumber">Номером накладної</option>
+              <option value="company">Назва компанії</option>
+              <option value="date">Дата</option>
+              <option value="invoiceNumber">Номер накладної</option>
             </select>
 
             {filterType === 'company' && (
@@ -150,7 +150,7 @@ const Invoices = ({ swal }) => {
       </div>
 
 
-      {editingInvoice && (
+      {editingInvoice ? (
         <EditInvoice
           invoice={editingInvoice}
           onUpdate={() => {
@@ -159,63 +159,98 @@ const Invoices = ({ swal }) => {
           }}
           onCancel={() => setEditingInvoice(null)}
         />
-      )}
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="table ">
+              <thead>
+                <tr>
+                  <td>№ накл.</td>
+                  <td>Дата</td>
+                  <td>Компанія постачальника</td>
+                  <td>Загальна сума</td>
+                  <td></td>
+                </tr>
+              </thead>
+              <tbody>
+                {currentInvoices.map((invoice) => (
+                  <tr key={invoice._id} className="hover">
+                    <td>{invoice.invoceNumber}</td>
+                    <td>
+                      {format(new Date(invoice.data), 'dd-MM-yyyy')}
+                    </td>
+                    <td>
+                      {invoice.company && invoice.company._id ? (
+                        <Link href={`/companies/` + invoice.company._id}>
+                          {invoice.company.name}
+                        </Link>
+                      ) : (
+                        <span>Немає даних про компанію</span>
+                      )}
+                    </td>
+                    <td>
+                      {invoice.totalPrice || invoice.totalPriceWithVAT} грн.
+                    </td>
+                    <td className='flex flex-row gap-2'>
+                      <button
+                        onClick={() => editInvoice(invoice)}
+                        className="btn-primary"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="2"
+                          stroke="currentColor"
+                          fontSize="16"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                          />
+                        </svg>
+                      </button>
 
-      <div className="overflow-x-auto">
-        <table className="table ">
-          <thead>
-            <tr>
-              <td>№ накл.</td>
-              <td>Дата</td>
-              <td>Компанія постачальника</td>
-              <td>Загальна сума</td>
-              <td></td>
-            </tr>
-          </thead>
-          <tbody>
-            {currentInvoices.map((invoice) => (
-              <tr key={invoice._id} className="hover">
-                <td>{invoice.invoceNumber}</td>
-                <td>
-                  {format(new Date(invoice.data), 'dd-MM-yyyy')}
-                </td>
-                <td>
-                  {invoice.company && invoice.company._id ? (
-                    <Link href={`/companies/` + invoice.company._id}>
-                      {invoice.company.name}
-                    </Link>
-                  ) : (
-                    <span>Немає даних про компанію</span>
-                  )}
-                </td>
-                <td>
-                  {invoice.totalPrice || invoice.totalPriceWithVAT} грн.
-                </td>
-                <td className='flex flex-row gap-4'>
-                  <button
-                    onClick={() => deleteInvoice(invoice)}
-                    className="btn-primary"
-                  >
-                    Видалити
-                  </button>
-                  <button
-                    onClick={() => editInvoice(invoice)}
-                    className="btn-primary"
-                  >
-                    Редагувати
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <Pagination
-        invoicesPerPage={invoicesPerPage}
-        totalInvoices={filteredInvoices.length}
-        paginate={paginate}
-        currentPage={currentPage}
-      />
+                      <button
+                        onClick={() => deleteInvoice(invoice)}
+                        className="btn-primary"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          aria-hidden="true"
+                          role="img"
+                          fontSize="16"
+                          width="1em"
+                          height="1em"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                          ></path>
+                        </svg>
+                      </button>
+
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            invoicesPerPage={invoicesPerPage}
+            totalInvoices={filteredInvoices.length}
+            paginate={paginate}
+            currentPage={currentPage}
+          />
+        </>
+      )}
     </Layout>
   );
 }

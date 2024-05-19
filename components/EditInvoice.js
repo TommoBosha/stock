@@ -218,7 +218,7 @@ const EditInvoice = ({ invoice, onUpdate, onCancel }) => {
                     <div className="mt-2">
                         <button
                             onClick={() => removeComponent(index)}
-                            className=" btn-primary"
+                            className=" btn-delete"
                         >
                             Видалити
                         </button>
@@ -320,9 +320,9 @@ const EditInvoice = ({ invoice, onUpdate, onCancel }) => {
                 </div>
             </div>
 
-            <div className='mt-4 flex flex-row gap-4'>
-                <button className=" btn-primary" onClick={handleSave}>Зберегти</button>
-                <button className=" btn-primary" onClick={onCancel}>Скасувати</button>
+            <div className='mt-4 flex flex-row justify-center gap-4'>
+                <button className=" btn-save" onClick={handleSave}>Зберегти</button>
+                <button className=" btn-default" onClick={onCancel}>Скасувати</button>
             </div>
         </div>
     );

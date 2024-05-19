@@ -128,7 +128,7 @@ function Companies({ swal }) {
     <Layout>
       <h1>Компанії постачальники</h1>
       <AddCompany fetchCompany={fetchCompany} />
-      <label>
+      <label className="text-2xl font-bold mb-4 text-gray-800">
         {editedCompany
           ? `Редагування компанії ${editedCompany.name}`
           : "Всі компанії"}
@@ -136,31 +136,35 @@ function Companies({ swal }) {
 
 
       {showForm && (
-        <form className="flex flex-col items-center justify-center mt-4" onSubmit={saveCompany}>
-          <div className="grid grid-cols-1   w-[80%]">
+        <form className="flex flex-col justify-center items-center max-w-4xl mx-auto my-4 p-5 bg-white shadow-md rounded-lg" onSubmit={saveCompany}>
+          <div className=" mb-4  ">
             <input
               type="text"
               placeholder={"Назва компанії"}
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
             <input
               type="text"
               placeholder={"Адреса"}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
             <input
               type="text"
               placeholder={"Сайт"}
               value={site}
               onChange={(e) => setSite(e.target.value)}
+              className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
             <input
               type="text"
               placeholder={"Номер телефону"}
               value={tel}
               onChange={(e) => setTel(e.target.value)}
+              className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
 
             {requisites.map((requisite, index) => (
@@ -171,6 +175,7 @@ function Companies({ swal }) {
                   placeholder={`МФО ${index + 1}`}
                   value={requisite.MFO}
                   onChange={(e) => handleRequisiteChange(e, index, "MFO")}
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
 
                 <input
@@ -178,6 +183,7 @@ function Companies({ swal }) {
                   placeholder={`IBAN ${index + 1}`}
                   value={requisite.IBAN}
                   onChange={(e) => handleRequisiteChange(e, index, "IBAN")}
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
 
                 <input
@@ -185,22 +191,25 @@ function Companies({ swal }) {
                   placeholder={`EDRPOU ${index + 1}`}
                   value={requisite.EDRPOU}
                   onChange={(e) => handleRequisiteChange(e, index, "EDRPOU")}
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
                 <input
                   type="text"
                   placeholder={`IPN ${index + 1}`}
                   value={requisite.IPN}
                   onChange={(e) => handleRequisiteChange(e, index, "IPN")}
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
                 <input
                   type="text"
                   placeholder={`address ${index + 1}`}
                   value={requisite.address}
                   onChange={(e) => handleRequisiteChange(e, index, "address")}
+                  className="mb-4 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
                 <div className="flex flex-row gap-2">
-                  <button className="btn-default" onClick={addRequisite}>Додати реквізит</button>
-                  <button className="btn-default" onClick={() => removeRequisite(index)}>Видалити</button>
+
+                  <button className="btn-delete" onClick={() => removeRequisite(index)}>Видалити</button>
                 </div>
 
 
@@ -208,8 +217,11 @@ function Companies({ swal }) {
             ))}
 
           </div>
-          <div className="flex items-start gap-2">
+          <div className="flex justify-center items-center gap-2 mt-8">
+
+            <button className="btn-default" onClick={addRequisite}>Додати реквізит</button>
             {editedCompany && (
+
               <button
                 type="button"
                 onClick={() => {
@@ -278,7 +290,7 @@ function Companies({ swal }) {
                       )}
                     </td>
 
-                    <td className=" grid grid-flow-col">
+                    <td className=" flex flex-row gap-2">
                       <button
                         className="btn-primary mr-1"
                         onClick={() => editCompany(company)}

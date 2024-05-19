@@ -23,6 +23,16 @@ module.exports = {
             "padding-top": " 4px",
             "padding-bottom": " 4px",
           },
+          ".btn-delete": {
+            "background-color": "#9f1239",
+            "border-color": "#1EA1F1",
+            "border-radius": "0.125rem",
+            "padding-right": " 16px",
+            "padding-left": " 16px",
+            "padding-top": " 4px",
+            "padding-bottom": " 4px",
+            "color": "#fff"
+          },
         },
       },
       "dark",
