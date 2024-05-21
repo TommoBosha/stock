@@ -172,10 +172,12 @@ const AddInvoice = ({ fetchInvoice }) => {
         setFormData({ ...formData, components: updatedComponents });
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
+
             const selectedCompany = companies.find((company) => company._id === formData.company);
             if (!selectedCompany) {
                 console.error("Компанія не знайдена");
@@ -185,6 +187,12 @@ const AddInvoice = ({ fetchInvoice }) => {
             const dataToSend = {
                 ...formData,
                 company: selectedCompany._id,
+                components: formData.components.map(component => ({
+                    name: component.name,
+                    quantity: component.quantity,
+                    unitPrice: component.unitPrice,
+                    totalPrice: component.totalPrice,
+                })),
                 ...(formData.discount ? { discount: formData.discount, discountValue: formData.discountValue } : {}),
             };
 
@@ -194,26 +202,32 @@ const AddInvoice = ({ fetchInvoice }) => {
                 delete dataToSend.priceWithoutVAT;
             }
 
+
             const res = await axios.post("/api/invoices", dataToSend);
 
-            setFormData({
-                invoceNumber: "",
-                company: "",
-                components: [],
-                data: "",
-                totalPrice: "",
-                withVAT: false,
-                priceWithoutVAT: "",
-                VAT: "",
-                totalPriceWithVAT: "",
-                discount: false,
-                discountValue: "",
-            });
+            if (res.status === 200) {
 
-            setInputValue('');
-            fetchInvoice();
-            document.getElementById("my_modal_5").close();
-            fetchCompanies();
+                fetchInvoice();
+
+                fetchComponents();
+
+                setFormData({
+                    invoceNumber: "",
+                    company: "",
+                    components: [],
+                    data: "",
+                    totalPrice: "",
+                    withVAT: false,
+                    priceWithoutVAT: "",
+                    VAT: "",
+                    totalPriceWithVAT: "",
+                    discount: false,
+                    discountValue: "",
+                });
+                setInputValue('');
+
+                document.getElementById("my_modal_5").close();
+            }
         } catch (error) {
             console.error("Помилка при додаванні накладної:", error);
         }
