@@ -1,20 +1,90 @@
 import { mongooseConnect } from "@/lib/mongoose";
+
+import { isAdminRequest } from "./auth/[...nextauth]";
 import Order from "@/models/Order";
 
-
-export default async function handler(req,res) {
+export default async function handle(req, res) {
+  const { method } = req;
   await mongooseConnect();
+  await isAdminRequest(res, req);
 
-  if (req.method === 'PUT') {
-    const { orderId, updateFields } = req.body;
+  if (method === 'GET') {
+    const { orderId } = req.query;
     try {
-      const updatedOrder = await Order.findByIdAndUpdate(orderId, updateFields, { new: true });
-      res.json(updatedOrder);
+      if (orderId) {
+        const order = await Order.findById(orderId).populate('client products.product');
+        if (!order) {
+          return res.status(404).json({ error: "Замовлення не знайдено." });
+        }
+        res.json(order);
+      } else {
+        const orders = await Order.find().populate('client products.product');
+        res.json(orders);
+      }
     } catch (error) {
-      res.status(500).json({ message: "Помилка оновлення даних" });
+      res.status(500).json({ error: "Помилка при отриманні замовлень з бази даних." });
+    }
+  }
+
+
+  else if (method === 'POST') {
+    const { client, data, products, totalPrice, isPaid, comment, orderNumber } = req.body;
+    console.log('Дата получена:', data);
+
+    try {
+      const newOrder = new Order({
+        client, data, products, totalPrice, isPaid, comment, orderNumber
+      });
+
+      const savedOrder = await Order.create(newOrder).then(savedOrder => {
+
+        res.json(savedOrder);
+      }).catch(error => {
+        console.error('Ошибка при сохранении заказа:', error);
+        res.status(500).json({ error: error.message });
+      });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Помилка при створенні замовлення" });
+    }
+
+  }
+
+
+  else if (method === "PUT") {
+    try {
+      const { client, data, products, totalPrice, isPaid, comment, orderNumber, orderId } = req.body;
+
+      const orderDoc = await Order.findByIdAndUpdate(
+        orderId, // Використовуйте orderId як _id для пошуку
+        { client, data, products, totalPrice, isPaid, comment, orderNumber },
+        { new: true }
+      );
+
+      if (!orderDoc) {
+        return res.status(404).json({ error: "Замовлення не знайдено." });
+      }
+
+      res.json(orderDoc);
+    } catch (error) {
+      res.status(500).json({ error: "Помилка при оновленні замовлення." });
+    }
+  }
+
+
+  else if (method === "DELETE") {
+    const { _id } = req.query;
+    try {
+      const result = await Order.findByIdAndDelete(_id);
+      if (!result) {
+        return res.status(404).json({ error: "Замовлення не знайдено." });
+      }
+      res.json({ message: "Замовлення видалено успішно." });
+    } catch (error) {
+      res.status(500).json({ error: "Помилка при видаленні замовлення." });
     }
   } else {
-   
-    res.json(await Order.find().sort({createdAt: -1}));
+    res.status(405).json({ error: "Метод не дозволений" });
   }
 }
