@@ -2,8 +2,7 @@ import { mongooseConnect } from "@/lib/mongoose";
 import { Client } from "@/models/Clients";
 import { Company } from "@/models/Company";
 import { Components } from "@/models/Components";
-import Order from "@/models/Order";
-import { Product } from "@/models/Product";
+import { Product } from "@/models/ProductModel";
 import mongoose from "mongoose";
 
 
