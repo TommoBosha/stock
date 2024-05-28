@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import SearchComponent from "@/components/SearchComponent";
 import { useSession } from "next-auth/react";
 
 
@@ -31,7 +32,7 @@ export default function Home() {
 
       </div>
       <div className="mt-4">
-
+        <SearchComponent />
 
       </div>
     </Layout>

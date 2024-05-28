@@ -1,7 +1,7 @@
 import { model, models, Schema } from "mongoose";
 
 const ComponentsSchema = new Schema({
-    name: { type: String, required: true },
+    name: { type: String, required: true, index: true },
     unitPrice: { type: String, required: true },
     company: [{ type: Schema.Types.ObjectId, ref: 'Company' }],
     invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },
@@ -14,5 +14,5 @@ const ComponentsSchema = new Schema({
         timestamps: true,
     }
 );
-
+ComponentsSchema.index({ name: 'text' });
 export const Components = models?.Component || model('Component', ComponentsSchema);

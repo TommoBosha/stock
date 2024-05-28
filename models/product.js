@@ -1,7 +1,7 @@
 const { Schema, model, models, default: mongoose } = require("mongoose");
 
 const ProductSchema = new Schema({
-    name: { type: String },
+    name: { type: String, index: true },
     components: [{
         component: { type: mongoose.Schema.Types.ObjectId, ref: 'Component' },
         name: { type: String },
@@ -16,5 +16,5 @@ const ProductSchema = new Schema({
     {
         timestamps: true,
     });
-
+ProductSchema.index({ name: 'text' });
 export const Product = models.Product || model('Product', ProductSchema);
