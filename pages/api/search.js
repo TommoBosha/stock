@@ -22,21 +22,21 @@ export default async function handler(req, res) {
     mongoose.model('Company').ensureIndexes();
     mongoose.model('Component').ensureIndexes();
     mongoose.model('Product').ensureIndexes();
-    // mongoose.model('Order').ensureIndexes();
+
 
     try {
         const clientsPromise = Client.find({ $text: { $search: query } });
         const companiesPromise = Company.find({ $text: { $search: query } });
         const componentsPromise = Components.find({ $text: { $search: query } });
         const productsPromise = Product.find({ $text: { $search: query } });
-        // const ordersPromise = Order.find({ $text: { $search: query } });
+
 
         const [clients, companies, components, products] = await Promise.all([
             clientsPromise,
             companiesPromise,
             componentsPromise,
             productsPromise,
-            // ordersPromise
+
         ]);
 
         res.status(200).json({ clients, companies, components, products });

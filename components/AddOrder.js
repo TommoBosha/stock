@@ -98,7 +98,7 @@ const AddOrder = ({ fetchOrders }) => {
         updatedProducts[index][field] = value;
         console.log(updatedProducts)
         if (field === 'name') {
-            updatedProducts[index].product = productId; // Переконайтеся, що productId встановлюється правильно
+            updatedProducts[index].product = productId;
         }
         setFormData({ ...formData, products: updatedProducts });
     };
@@ -106,17 +106,13 @@ const AddOrder = ({ fetchOrders }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(formData.products)
-        // if (formData.products.some(product => !product.product)) {
-        //     console.error("Не всі продукти мають коректний ID");
-        //     return; // Припиніть відправку форми, якщо який-небудь продукт не має ID
-        // }
+
 
         try {
             const dataToSend = {
                 ...formData,
                 data: formData.data,
                 products: formData.products.map(product => ({
-                    // product: product.product,
                     name: product.name,
                     quantity: product.quantity,
                 })),

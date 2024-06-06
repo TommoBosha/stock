@@ -2,6 +2,7 @@ import { mongooseConnect } from "@/lib/mongoose";
 
 import { isAdminRequest } from "./auth/[...nextauth]";
 import Order from "@/models/Order";
+import { Client } from "@/models/Clients";
 
 export default async function handle(req, res) {
   const { method } = req;
@@ -13,6 +14,7 @@ export default async function handle(req, res) {
     try {
       if (orderId) {
         const order = await Order.findById(orderId).populate('client products.product');
+        res.json(order);
         if (!order) {
           return res.status(404).json({ error: "Замовлення не знайдено." });
         }
@@ -22,6 +24,7 @@ export default async function handle(req, res) {
         res.json(orders);
       }
     } catch (error) {
+      console.error('Помилка при отриманні замовлень:', error);
       res.status(500).json({ error: "Помилка при отриманні замовлень з бази даних." });
     }
   }
