@@ -80,6 +80,7 @@ export default async function handler(req, res) {
             );
             res.json(productDoc);
         } catch (error) {
+            console.error("Помилка при оновленні продукту:", error);
             res.status(500).json({ error: "Помилка при оновленні продукту" });
         }
     }
