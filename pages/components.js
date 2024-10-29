@@ -13,7 +13,7 @@ const ComponentsPage = () => {
         const componentsData = await fetch('/api/components').then((res) => res.json());
         const companiesData = await fetch('/api/companies').then((res) => res.json());
         setComponents(componentsData);
-        console.log(companiesData)
+
         setCompanies(companiesData);
       } catch (error) {
         console.error('Error fetching data:', error);

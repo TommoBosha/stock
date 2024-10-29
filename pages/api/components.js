@@ -1,18 +1,40 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { Components } from "@/models/Components";
 import { isAdminRequest } from "./auth/[...nextauth]";
+import mongoose from 'mongoose';
 
 export default async function handle(req, res) {
   const { method } = req;
+
+  // Подключение к базе данных
   await mongooseConnect();
   await isAdminRequest(res, req);
 
   if (method === 'GET') {
+    const { id } = req.query;
+
     try {
-      const components = await Components.find();
-      res.json(components);
+      if (id) {
+        // Проверка валидности ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(400).json({ error: 'Невірний формат ідентифікатора' });
+        }
+
+        // Поиск конкретного компонента по ID
+        const component = await Components.findById(id);
+        if (!component) {
+          return res.status(404).json({ error: 'Комплектуюча не знайдена' });
+        }
+
+        res.json(component);
+      } else {
+        // Если ID нет, возвращаем все комплектующие
+        const components = await Components.find();
+        res.json(components);
+      }
     } catch (error) {
-      res.status(500).json({ error: "Помилка при отриманні комплектуючих з бази даних." });
+      console.error("Помилка при отриманні комплектуючих:", error.message);
+      res.status(500).json({ error: "Помилка при отриманні комплектуючих" });
     }
   }
 
@@ -26,6 +48,8 @@ export default async function handle(req, res) {
         countInStock,
         images
       } = req.body;
+
+      // Создание нового документа в базе данных
       const componentDoc = await Components.create({
         name,
         price,
@@ -34,6 +58,7 @@ export default async function handle(req, res) {
         countInStock,
         images
       });
+
       res.json(componentDoc);
     } catch (error) {
       res.status(500).json({ error: "Помилка при створенні компонента" });
@@ -49,8 +74,15 @@ export default async function handle(req, res) {
         invoice,
         quantity,
         images,
-        _id,
+        _id
       } = req.body;
+
+      // Проверка валидности ID
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+        return res.status(400).json({ error: 'Невірний формат ідентифікатора' });
+      }
+
+      // Обновление существующего компонента
       const componentDoc = await Components.findOneAndUpdate(
         { _id },
         {
@@ -63,6 +95,11 @@ export default async function handle(req, res) {
         },
         { new: true }
       );
+
+      if (!componentDoc) {
+        return res.status(404).json({ error: 'Комплектуюча не знайдена' });
+      }
+
       res.json(componentDoc);
     } catch (error) {
       res.status(500).json({ error: "Помилка при оновленні компонента" });
@@ -72,10 +109,22 @@ export default async function handle(req, res) {
   if (method === "DELETE") {
     try {
       const { _id } = req.query;
-      await Components.deleteOne({ _id });
-      res.json({ message: "Компонент видалена успішно." });
+
+      // Проверка валидности ID
+      if (!mongoose.Types.ObjectId.isValid(_id)) {
+        return res.status(400).json({ error: 'Невірний формат ідентифікатора' });
+      }
+
+      // Удаление компонента
+      const deleteResult = await Components.deleteOne({ _id });
+
+      if (deleteResult.deletedCount === 0) {
+        return res.status(404).json({ error: 'Комплектуюча не знайдена' });
+      }
+
+      res.json({ message: "Комплектуюча видалена успішно." });
     } catch (error) {
-      res.status(500).json({ error: "Помилка при видаленні компонента." });
+      res.status(500).json({ error: "Помилка при видаленні компонента" });
     }
   }
 }

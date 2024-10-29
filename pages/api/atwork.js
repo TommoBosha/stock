@@ -127,10 +127,10 @@ export default async function handler(req, res) {
                 comment,
             } = req.body;
 
-            // Розрахунок різниці та віднімання компонентів
+
             await adjustComponentQuantities(existingWorkDay.products, products);
 
-            // Оновлення запису
+
             const updatedWorkDay = await AtWork.findByIdAndUpdate(
                 _id,
                 { orders, date, serialNumber, products, contractor, comment },

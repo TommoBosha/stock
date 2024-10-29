@@ -11,11 +11,52 @@ export default async function handle(req, res) {
 
 
 
+  // if (method === "GET") {
+  //   if (req.query.ibans && req.query.name) {
+  //     try {
+  //       const company = await Company.findOne({ name: req.query.name });
+  //       console.log(company)
+  //       if (!company) {
+  //         throw new Error('Компанію не знайдено за ім\'ям');
+  //       }
+  //       const ibans = company.requisites.map(requisite => requisite.IBAN);
+  //       res.json(ibans);
+  //     } catch (error) {
+  //       console.error("Помилка при отриманні IBAN компанії:", error);
+  //       res.status(500).json({ error: error.message });
+  //     }
+
+  //   } else if (req.query?.id) {
+  //     try {
+  //       if (!mongoose.Types.ObjectId.isValid(req.query.id)) {
+  //         throw new Error('Невірний формат ідентифікатора');
+  //       }
+  //       const company = await Company.findOne({ _id: req.query.id });
+  //       if (!company) {
+  //         throw new Error('Компанію не знайдено');
+  //       }
+  //       res.json(company);
+  //     } catch (error) {
+  //       console.error("Помилка при отриманні компанії:", error);
+  //       res.status(500).json({ error: "Помилка при отриманні компанії" });
+  //     }
+  //   } else {
+  //     try {
+  //       const companies = await Company.find();
+  //       res.json(companies);
+  //     } catch (error) {
+  //       console.error("Помилка при отриманні списку компаній:", error);
+  //       res.status(500).json({ error: "Помилка при отриманні списку компаній" });
+  //     }
+  //   }
+  // }
+
+
   if (method === "GET") {
     if (req.query.ibans && req.query.name) {
+      // Логика поиска по имени и IBAN остается без изменений
       try {
         const company = await Company.findOne({ name: req.query.name });
-        console.log(company)
         if (!company) {
           throw new Error('Компанію не знайдено за ім\'ям');
         }
@@ -27,6 +68,7 @@ export default async function handle(req, res) {
       }
 
     } else if (req.query?.id) {
+      // Поиск по конкретному ID
       try {
         if (!mongoose.Types.ObjectId.isValid(req.query.id)) {
           throw new Error('Невірний формат ідентифікатора');
@@ -40,6 +82,18 @@ export default async function handle(req, res) {
         console.error("Помилка при отриманні компанії:", error);
         res.status(500).json({ error: "Помилка при отриманні компанії" });
       }
+
+    } else if (req.query?.ids) {
+      // Новый блок: Поиск по нескольким ID
+      try {
+        const idsArray = req.query.ids.split(',').filter(id => mongoose.Types.ObjectId.isValid(id));
+        const companies = await Company.find({ _id: { $in: idsArray } });
+        res.json(companies);
+      } catch (error) {
+        console.error("Помилка при отриманні компаній:", error);
+        res.status(500).json({ error: "Помилка при отриманні компаній" });
+      }
+
     } else {
       try {
         const companies = await Company.find();
@@ -50,7 +104,6 @@ export default async function handle(req, res) {
       }
     }
   }
-
 
   if (method === "POST") {
     try {

@@ -159,7 +159,9 @@ const ComponentTable = ({ components, onUpdate, companies }) => {
                                         onChange={handleInputChange}
                                     />
                                 ) : (
-                                    component.name
+                                    <Link href={`/components/${component._id}`}>
+                                        {component.name}
+                                    </Link>
                                 )}
                             </td>
                             <td>

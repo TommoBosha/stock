@@ -167,10 +167,11 @@ const AddWork = ({ fetchWorkDays }) => {
                         <h3>Коментар:</h3>
                         <textarea value={comment} onChange={e => setComment(e.target.value)} />
                         <button className="btn-default" type="submit">Зберегти</button>
-                        <button
-                            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                            onClick={() => modalRef.current.close()}>✕</button>
+
                     </form>
+                    <button
+                        className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                        onClick={() => modalRef.current.close()}>✕</button>
                 </div>
             </dialog>
         </div>
