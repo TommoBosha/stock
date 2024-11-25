@@ -8,20 +8,31 @@ import Spinner from "./Spinner";
 const AddProduct = ({ fetchCompany, _id }) => {
     const [name, setName] = useState("");
     const [components, setComponents] = useState([{ _id: "", name: "", quantity: "" }]);
+    const [products, setProducts] = useState([{ _id: "", name: "", quantity: "" }]);
     const [agent, setAgent] = useState("");
     const [assemblyPrice, setAssemblyPrice] = useState("");
     const [images, setImages] = useState("");
     const [isUploading, setIsUploading] = useState(false);
     const [availableComponents, setAvailableComponents] = useState([]);
+    const [availableProducts, setAvailableProducts] = useState([]);
 
     const router = useRouter();
     const modalRef = useRef(null);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        axios.get('/api/components').then(result => {
-            setAvailableComponents(result.data.map(comp => comp.name));
-        });
+        async function fetchData() {
+            try {
+                const componentsResult = await axios.get('/api/components');
+                setAvailableComponents(componentsResult.data.map(comp => comp.name));
+
+                const productsResult = await axios.get('/api/products');
+                setAvailableProducts(productsResult.data.map(prod => prod.name));
+            } catch (error) {
+                console.error("Ошибка при загрузке данных:", error);
+            }
+        }
+        fetchData();
     }, []);
 
     async function saveProduct(e) {
@@ -29,13 +40,14 @@ const AddProduct = ({ fetchCompany, _id }) => {
         const data = {
             name,
             components,
+            products,
             agent,
             assemblyPrice,
             images,
         };
 
         if (name.trim() === "") {
-            console.error();
+            console.error("Название продукта не может быть пустым");
             return;
         }
 
@@ -93,9 +105,26 @@ const AddProduct = ({ fetchCompany, _id }) => {
         });
     }
 
+    function addProduct() {
+        setProducts(prevProducts => [...prevProducts, { _id: "", name: "", quantity: "" }]);
+    }
+
+    function removeProduct(index) {
+        setProducts(prevProducts => prevProducts.filter((_, i) => i !== index));
+    }
+
+    function updateProduct(index, key, value) {
+        setProducts(prevProducts => {
+            const newProducts = [...prevProducts];
+            newProducts[index][key] = value;
+            return newProducts;
+        });
+    }
+
     function clearForm() {
         setName("");
         setComponents([{ _id: "", name: "", quantity: "" }]);
+        setProducts([{ _id: "", name: "", quantity: "" }]);
         setAgent("");
         setAssemblyPrice("");
         setImages("");
@@ -128,7 +157,7 @@ const AddProduct = ({ fetchCompany, _id }) => {
             </button>
             <dialog ref={modalRef} id="my_modal_5" className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box p-6 bg-white shadow-xl rounded-md">
-                    <h3 className="font-bold text-lg mb-4">Додати компанію</h3>
+                    <h3 className="font-bold text-lg mb-4">Додати продукт</h3>
                     <form onSubmit={saveProduct}>
                         <label>Назва продукту</label>
                         <input
@@ -136,6 +165,7 @@ const AddProduct = ({ fetchCompany, _id }) => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
+
                         <h2>Комплектуючі</h2>
                         {components.map((component, index) => (
                             <div key={index}>
@@ -162,6 +192,36 @@ const AddProduct = ({ fetchCompany, _id }) => {
                                 <div className="flex flex-row gap-4 py-4">
                                     <button className="btn-default" type="button" onClick={() => removeComponent(index)}>Видалити</button>
                                     <button className="btn-default" type="button" onClick={addComponent}>Додати компонент</button>
+                                </div>
+                            </div>
+                        ))}
+
+                        <h2>Вироби</h2>
+                        {products.map((product, index) => (
+                            <div key={index}>
+                                <input
+                                    type="text"
+                                    placeholder="Введіть назву виробу"
+                                    value={product.name}
+                                    onChange={(e) => updateProduct(index, "name", e.target.value)}
+                                    list={`productsList${index}`}
+                                />
+                                <datalist id={`productsList${index}`}>
+                                    {availableProducts.map((prod, idx) => (
+                                        <option key={idx} value={prod} />
+                                    ))}
+                                </datalist>
+
+                                <input
+                                    type="text"
+                                    placeholder="Кількість"
+                                    value={product.quantity}
+                                    onChange={(e) => updateProduct(index, "quantity", +e.target.value)}
+                                />
+
+                                <div className="flex flex-row gap-4 py-4">
+                                    <button className="btn-default" type="button" onClick={() => removeProduct(index)}>Видалити</button>
+                                    <button className="btn-default" type="button" onClick={addProduct}>Додати виріб</button>
                                 </div>
                             </div>
                         ))}

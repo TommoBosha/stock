@@ -265,7 +265,7 @@ const ClientsPage = ({ swal }) => {
                                 currentCompanies.map((company) => (
                                     <tr key={company._id} className="hover">
                                         <td>
-                                            <Link href={`/companies/` + company._id}>
+                                            <Link href={`/clients/` + company._id}>
                                                 <span className="font-bold text-primary" >{company.name}</span>
                                             </Link>
                                         </td>

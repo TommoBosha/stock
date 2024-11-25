@@ -44,7 +44,6 @@ const ProductTable = ({ products, onUpdate, swal, fetchCompany }) => {
                     });
 
                     if (response.ok) {
-
                         onUpdate(products.filter(prod => prod._id !== product._id));
                         fetchCompany();
                         swal.fire("Успішно", "Продукт видалено", "success");
@@ -84,7 +83,7 @@ const ProductTable = ({ products, onUpdate, swal, fetchCompany }) => {
                     <tr>
                         <th>Зображення</th>
                         <th>Назва</th>
-                        <th>Компоненти</th>
+                        <th>Компоненти та Вироби</th>
                         <th>Послуги посередництва</th>
                         <th>Ціна за зборку</th>
                         <th></th>
@@ -95,14 +94,29 @@ const ProductTable = ({ products, onUpdate, swal, fetchCompany }) => {
                         <tr key={product._id}>
                             <td><img src={product.images || 'https://via.placeholder.com/150'} alt="Product" style={{ width: '100px' }} /></td>
                             <td>{product.name}</td>
-                            <td>{product.components.map((component, index) =>
-                                <div className='mb-2 border-b' key={index}>
-                                    <p><span className="font-bold " >Назва:</span> {component.name}&nbsp;&nbsp;</p>
-                                    <p><span className="font-bold " >Кількість:</span> {component.quantity}&nbsp;&nbsp;</p>
-                                </div>)}</td>
+                            <td>
+                                <div className="mb-2">
+                                    <h4 className="font-semibold">Комплектуючі:</h4>
+                                    {product.components?.map((component, index) => (
+                                        <div className="mb-2 border-b" key={index}>
+                                            <p><span className="font-bold">Назва:</span> {component.name}&nbsp;&nbsp;</p>
+                                            <p><span className="font-bold">Кількість:</span> {component.quantity}&nbsp;&nbsp;</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">Вироби:</h4>
+                                    {product.products?.map((item, index) => (
+                                        <div className="mb-2 border-b" key={index}>
+                                            <p><span className="font-bold">Назва:</span> {item.name}&nbsp;&nbsp;</p>
+                                            <p><span className="font-bold">Кількість:</span> {item.quantity}&nbsp;&nbsp;</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </td>
                             <td>{product.agent}</td>
                             <td>{product.assemblyPrice}</td>
-                            <td className=" flex gap-2">
+                            <td className="flex gap-2">
                                 <button className="btn-primary" onClick={() => handleEdit(product)}>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -159,3 +173,4 @@ const ProductTable = ({ products, onUpdate, swal, fetchCompany }) => {
 };
 
 export default withSwal(ProductTable);
+

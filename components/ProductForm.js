@@ -7,24 +7,35 @@ export default function ProductForm({
     _id,
     name: existingName,
     components: existingComponents,
+    products: existingProducts,
     agent: existingAgent,
     assemblyPrice: existingAssemblyPrice,
     images: existingImages,
 }) {
     const [name, setName] = useState(existingName || "");
     const [components, setComponents] = useState(existingComponents || [{ _id: "", name: "", quantity: "" }]);
+    const [products, setProducts] = useState(existingProducts || [{ _id: "", name: "", quantity: "" }]);
     const [agent, setAgent] = useState(existingAgent || "");
     const [assemblyPrice, setAssemblyPrice] = useState(existingAssemblyPrice || "");
     const [images, setImages] = useState(existingImages || []);
     const [isUploading, setIsUploading] = useState(false);
     const [availableComponents, setAvailableComponents] = useState([]);
+    const [availableProducts, setAvailableProducts] = useState([]);
 
     const router = useRouter();
 
     useEffect(() => {
-        axios.get('/api/components').then(result => {
-            setAvailableComponents(result.data.map(comp => comp.name));
-        });
+        async function fetchData() {
+            try {
+                const result = await axios.get('/api/products?type=all');
+                setAvailableComponents(result.data.components.map(comp => comp.name));
+                setAvailableProducts(result.data.products.map(prod => prod.name));
+            } catch (error) {
+                console.error("Ошибка при загрузке компонентов и изделий:", error);
+            }
+        }
+
+        fetchData();
     }, []);
 
     async function saveProduct(e) {
@@ -32,6 +43,7 @@ export default function ProductForm({
         const data = {
             name,
             components,
+            products,
             agent,
             assemblyPrice,
             images,
@@ -43,25 +55,6 @@ export default function ProductForm({
             await axios.post("/api/products", data);
         }
         router.push("/products");
-    }
-
-    async function uploadImage(e) {
-        const files = e.target?.files;
-        if (files?.length > 0) {
-            setIsUploading(true);
-            const data = new FormData();
-            for (const file of files) {
-                data.append("file", file);
-            }
-            try {
-                const res = await axios.post("/api/upload", data);
-                setImages((oldImages) => [...oldImages, ...res.data.links]);
-            } catch (error) {
-                console.error('Помилка завантаження файлів:', error);
-            } finally {
-                setIsUploading(false);
-            }
-        }
     }
 
     function addComponent() {
@@ -80,6 +73,22 @@ export default function ProductForm({
         });
     }
 
+    function addProduct() {
+        setProducts(prevProducts => [...prevProducts, { _id: "", name: "", quantity: "" }]);
+    }
+
+    function removeProduct(index) {
+        setProducts(prevProducts => prevProducts.filter((_, i) => i !== index));
+    }
+
+    function updateProduct(index, key, value) {
+        setProducts(prevProducts => {
+            const newProducts = [...prevProducts];
+            newProducts[index][key] = value;
+            return newProducts;
+        });
+    }
+
     return (
         <form onSubmit={saveProduct}>
             <label>Назва продукту</label>
@@ -88,6 +97,7 @@ export default function ProductForm({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
             />
+
             <h2>Комплектуючі</h2>
             {components.map((component, index) => (
                 <div key={index}>
@@ -105,21 +115,42 @@ export default function ProductForm({
                     </datalist>
 
                     <input
-                        type="text"
+                        type="number"
                         placeholder="Кількість"
                         value={component.quantity}
                         onChange={(e) => updateComponent(index, "quantity", +e.target.value)}
                     />
-
-                    <div className="flex flex-row gap-4 py-4">
-                        <button className="btn-default" type="button" onClick={() => removeComponent(index)}>Видалити</button>
-                        <button className="btn-default" type="button" onClick={addComponent}>Додати компонент</button>
-                    </div>
+                    <button type="button" onClick={() => removeComponent(index)}>Видалити</button>
                 </div>
             ))}
+            <button type="button" onClick={addComponent}>Додати компонент</button>
 
+            <h2>Вироби</h2>
+            {products.map((product, index) => (
+                <div key={index}>
+                    <input
+                        type="text"
+                        placeholder="Введіть назву виробу"
+                        value={product.name}
+                        onChange={(e) => updateProduct(index, "name", e.target.value)}
+                        list={`productsList${index}`}
+                    />
+                    <datalist id={`productsList${index}`}>
+                        {availableProducts.map((prod, idx) => (
+                            <option key={idx} value={prod} />
+                        ))}
+                    </datalist>
 
-
+                    <input
+                        type="number"
+                        placeholder="Кількість"
+                        value={product.quantity}
+                        onChange={(e) => updateProduct(index, "quantity", +e.target.value)}
+                    />
+                    <button type="button" onClick={() => removeProduct(index)}>Видалити</button>
+                </div>
+            ))}
+            <button type="button" onClick={addProduct}>Додати виріб</button>
 
             <label>Посередник</label>
             <input
@@ -144,7 +175,7 @@ export default function ProductForm({
 
             {isUploading && <Spinner />}
 
-            <button className="btn-default" type="submit">Зберегти</button>
+            <button type="submit">Зберегти</button>
         </form>
     );
 }

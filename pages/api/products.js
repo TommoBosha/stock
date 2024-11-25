@@ -1,23 +1,25 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { isAdminRequest } from "./auth/[...nextauth]";
-
 import { Components } from "@/models/Components";
 import { Product } from "@/models/ProductModel";
 
-
-async function convertComponentNamesToIds(components) {
-    const componentIds = [];
-    if (!Array.isArray(components)) {
-        return componentIds;
+async function convertNamesToIds(items, model) {
+    const itemIds = [];
+    if (!Array.isArray(items)) {
+        return itemIds;
     }
-    for (const component of components) {
-        const { _id, name, quantity } = component;
-        const componentInfo = await Components.findOne({ name });
-        if (componentInfo) {
-            componentIds.push({ _id: componentInfo._id, name, quantity });
+    for (const item of items) {
+        const { name, quantity } = item;
+        const itemInfo = await model.findOne({ name });
+        if (itemInfo) {
+            itemIds.push({
+                item: itemInfo._id, // Используем `item` для соответствия схеме
+                name,
+                quantity,
+            });
         }
     }
-    return componentIds;
+    return itemIds;
 }
 
 export default async function handler(req, res) {
@@ -26,58 +28,93 @@ export default async function handler(req, res) {
     await isAdminRequest(res, req);
 
     if (method === "GET") {
-        if (req.query?.id) {
-            res.json(await Product.findOne({ _id: req.query.id }));
+        const { type } = req.query;
+        
+        if (type === 'all') {
+            const components = await Components.find();
+            const products = await Product.find();
+            res.json({ components, products });
+        } else if (req.query?.id) {
+            const product = await Product.findOne({ _id: req.query.id });
+            if (product && product.products && product.products.length > 0) {
+                await product.populate('components.component').populate('products.product');
+            } else {
+                await product.populate('components.component');
+            }
+            res.json(product);
         } else {
-            res.json(await Product.find());
+            const products = await Product.find();
+            for (const product of products) {
+                if (product.products && product.products.length > 0) {
+                    await product.populate('components.component').populate('products.product');
+                } else {
+                    await product.populate('components.component');
+                }
+            }
+            res.json(products);
         }
     }
 
-    if (method === "POST") {
-        const {
-            name,
-            components,
-            agent,
-            assemblyPrice,
-            images
-        } = req.body;
+   if (method === "POST") {
+        const { name, components, products, agent, assemblyPrice, images } = req.body;
 
-        const componentIds = await convertComponentNamesToIds(components);
+        // Конвертируем имена в ObjectId для компонентов и изделий
+        const componentIds = await convertNamesToIds(components, Components);
+        const productIds = await convertNamesToIds(products, Product);
 
-        const productDoc = await Product.create({
+        console.log("Final product data to save:", {
             name,
             components: componentIds,
+            products: productIds,
             agent,
             assemblyPrice,
             images
         });
+
+        // Создаем продукт с компонентами и изделиями
+        const productDoc = await Product.create({
+            name,
+            components: componentIds,
+            products: productIds,
+            agent,
+            assemblyPrice,
+            images
+        });
+
+        console.log("Saved product document:", productDoc); // Дополнительный отладочный вывод
+
         res.json(productDoc);
     }
 
     if (method === "PUT") {
         try {
-            const {
+            const { name, components, products, agent, assemblyPrice, images, _id } = req.body;
+
+            const componentIds = await convertNamesToIds(components, Components);
+            const productIds = await convertNamesToIds(products, Product);
+
+            console.log("Updating product data:", {
                 name,
-                components,
+                components: componentIds,
+                products: productIds,
                 agent,
                 assemblyPrice,
-                images,
-
-                _id,
-            } = req.body;
+                images
+            });
 
             const productDoc = await Product.findOneAndUpdate(
-
                 { _id },
                 {
                     name,
-                    components,
+                    components: componentIds,
+                    products: productIds,
                     agent,
                     assemblyPrice,
                     images,
                 },
                 { new: true }
-            );
+            ).populate('components.component').populate('products.product');
+
             res.json(productDoc);
         } catch (error) {
             console.error("Помилка при оновленні продукту:", error);
