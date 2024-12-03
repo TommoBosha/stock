@@ -116,7 +116,11 @@ function SearchComponent() {
                                         {results.components.map(component => (
                                             <tr key={component._id}>
 
-                                                <td>{component.name}</td>
+                                                <td>
+                                                    <Link href={`/components/${component._id}`}>
+                                                        <span className="font-bold text-primary">{component.name}</span>
+                                                    </Link>
+                                                </td>
                                                 <td>{component.quantity}</td>
                                                 <td>{component.unitPrice} грн.</td>
                                             </tr>
