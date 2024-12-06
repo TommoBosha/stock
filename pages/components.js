@@ -5,7 +5,7 @@ import ComponentTable from '@/components/ComponentTable';
 const ComponentsPage = () => {
   const [components, setComponents] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(''); 
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchComponents = async () => {
@@ -30,7 +30,7 @@ const ComponentsPage = () => {
     );
   };
 
-  // Фильтруем компоненты на основе значения поиска
+
   const filteredComponents = components.filter((component) =>
     component.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -38,7 +38,7 @@ const ComponentsPage = () => {
   return (
     <Layout>
       <h1>Комплектуючі</h1>
-      {/* Добавляем поле ввода для поиска */}
+
       <div className="mb-4">
         <input
           type="text"
@@ -49,7 +49,7 @@ const ComponentsPage = () => {
         />
       </div>
       <ComponentTable
-        components={filteredComponents} 
+        components={filteredComponents}
         companies={companies}
         onUpdate={handleComponentUpdate}
       />

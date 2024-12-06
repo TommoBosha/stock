@@ -161,14 +161,21 @@ const AddInvoice = ({ fetchInvoice }) => {
 
     const handleComponentChange = (index, field, value) => {
         const updatedComponents = [...formData.components];
-        updatedComponents[index][field] = value;
-
+    
+       
         if (field === 'quantity' || field === 'unitPrice') {
-            const quantity = parseFloat(updatedComponents[index]['quantity']) || 0;
-            const unitPrice = parseFloat(updatedComponents[index]['unitPrice']) || 0;
+            value = value.replace(',', '.'); 
+        }
+    
+        updatedComponents[index][field] = value;
+    
+        
+        if (field === 'quantity' || field === 'unitPrice') {
+            const quantity = parseFloat(updatedComponents[index]['quantity'].replace(',', '.')) || 0;
+            const unitPrice = parseFloat(updatedComponents[index]['unitPrice'].replace(',', '.')) || 0;
             updatedComponents[index]['totalPrice'] = (quantity * unitPrice).toFixed(2);
         }
-
+    
         setFormData({ ...formData, components: updatedComponents });
     };
 
