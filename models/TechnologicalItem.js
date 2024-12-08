@@ -1,13 +1,13 @@
 const { Schema, model, models, default: mongoose } = require("mongoose");
 
 const TechProcessSchema = new Schema({
-    name: { type: String, required: true }, // Назва технологічки
+    name: { type: String, required: true }, 
     components: [{
-        item: { type: mongoose.Schema.Types.ObjectId, ref: 'Component' }, // Посилання на компонент
+        item: { type: mongoose.Schema.Types.ObjectId, ref: 'Component' }, 
         name: { type: String },
         quantity: { type: Number },
     }],
-    createdBy: { type: String }, // Хто створив технологічку
+    createdBy: { type: String }, 
 }, {
     timestamps: true,
     strictPopulate: false,

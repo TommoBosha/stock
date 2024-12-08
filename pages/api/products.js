@@ -1,25 +1,25 @@
+
 import { mongooseConnect } from "@/lib/mongoose";
 import { isAdminRequest } from "./auth/[...nextauth]";
-import { Components } from "@/models/Components";
 import { Product } from "@/models/ProductModel";
+import { TechProcess } from "@/models/TechnologicalItem";
+import { Components } from "@/models/Components";
 
-async function convertNamesToIds(items, model) {
-    const itemIds = [];
-    if (!Array.isArray(items)) {
-        return itemIds;
-    }
-    for (const item of items) {
-        const { name, quantity } = item;
-        const itemInfo = await model.findOne({ name });
-        if (itemInfo) {
-            itemIds.push({
-                item: itemInfo._id, // Используем `item` для соответствия схеме
-                name,
-                quantity,
+async function convertTechComponentsToIds(techComponents) {
+    const results = [];
+    for (const comp of techComponents) {
+      
+        const componentDoc = await Components.findOne({ name: comp.item.name });
+        if (componentDoc) {
+            results.push({
+                item: componentDoc._id,
+                name: componentDoc.name,
+                quantity: comp.quantity,
+                totalPrice: comp.quantity * componentDoc.unitPrice,
             });
         }
     }
-    return itemIds;
+    return results;
 }
 
 export default async function handler(req, res) {
@@ -27,98 +27,85 @@ export default async function handler(req, res) {
     await mongooseConnect();
     await isAdminRequest(res, req);
 
-    if (method === "GET") {
-        const { type } = req.query;
-        
-        if (type === 'all') {
-            const components = await Components.find();
-            const products = await Product.find();
-            res.json({ components, products });
-        } else if (req.query?.id) {
-            const product = await Product.findOne({ _id: req.query.id });
-            if (product && product.products && product.products.length > 0) {
-                await product.populate('components.component').populate('products.product');
-            } else {
-                await product.populate('components.component');
+    if (method === "POST") {
+        try {
+            const { technology, assemblyPrice, salePrice, manufacturingTime, images } = req.body;
+
+            // Находим технологическую карту
+            const techCard = await TechProcess.findById(technology).populate('components.item');
+            if (!techCard) {
+                return res.status(404).json({ error: "Технологічна карта не знайдена" });
             }
-            res.json(product);
-        } else {
-            const products = await Product.find();
-            for (const product of products) {
-                if (product.products && product.products.length > 0) {
-                    await product.populate('components.component').populate('products.product');
-                } else {
-                    await product.populate('components.component');
-                }
-            }
-            res.json(products);
+
+            // Конвертируем компоненты из технологической карты в нужный формат
+            const componentsData = await convertTechComponentsToIds(techCard.components);
+
+            // Создаем новый продукт на основе данных технологической карты
+            const newProduct = await Product.create({
+                name: techCard.name,
+                components: componentsData,
+                assemblyPrice,
+                salePrice,
+                manufacturingTime,
+                images,
+            });
+
+            return res.status(201).json({ success: true, product: newProduct });
+        } catch (error) {
+            console.error("Помилка при створенні виробу:", error);
+            return res.status(500).json({ error: "Помилка при створенні виробу." });
         }
-    }
-
-   if (method === "POST") {
-        const { name, components, products, agent, assemblyPrice, images } = req.body;
-
-        // Конвертируем имена в ObjectId для компонентов и изделий
-        const componentIds = await convertNamesToIds(components, Components);
-        const productIds = await convertNamesToIds(products, Product);
-
-        console.log("Final product data to save:", {
-            name,
-            components: componentIds,
-            products: productIds,
-            agent,
-            assemblyPrice,
-            images
-        });
-
-        // Создаем продукт с компонентами и изделиями
-        const productDoc = await Product.create({
-            name,
-            components: componentIds,
-            products: productIds,
-            agent,
-            assemblyPrice,
-            images
-        });
-
-        console.log("Saved product document:", productDoc); // Дополнительный отладочный вывод
-
-        res.json(productDoc);
     }
 
     if (method === "PUT") {
         try {
-            const { name, components, products, agent, assemblyPrice, images, _id } = req.body;
-
-            const componentIds = await convertNamesToIds(components, Components);
-            const productIds = await convertNamesToIds(products, Product);
-
-            console.log("Updating product data:", {
-                name,
-                components: componentIds,
-                products: productIds,
-                agent,
-                assemblyPrice,
-                images
-            });
-
-            const productDoc = await Product.findOneAndUpdate(
-                { _id },
+            const { _id, technology, assemblyPrice, salePrice, manufacturingTime, images } = req.body;
+    
+            const techCard = await TechProcess.findById(technology).populate('components.item');
+            if (!techCard) {
+                return res.status(404).json({ error: "Технологічна карта не знайдена." });
+            }
+    
+            // Конвертируем компоненты для обновления
+            const componentsData = await convertTechComponentsToIds(techCard.components);
+    
+            const updatedProduct = await Product.findByIdAndUpdate(
+                _id,
                 {
-                    name,
-                    components: componentIds,
-                    products: productIds,
-                    agent,
+                    name: techCard.name,
+                    components: componentsData,
                     assemblyPrice,
-                    images,
+                    salePrice,
+                    manufacturingTime,
+                    images, // Обновляем изображение
                 },
                 { new: true }
-            ).populate('components.component').populate('products.product');
-
-            res.json(productDoc);
+            ).populate('components.item');
+    
+            res.status(200).json(updatedProduct);
         } catch (error) {
-            console.error("Помилка при оновленні продукту:", error);
-            res.status(500).json({ error: "Помилка при оновленні продукту" });
+            console.error("Помилка при оновленні виробу:", error);
+            res.status(500).json({ error: "Помилка при оновленні виробу." });
+        }
+    }
+
+    if (method === "GET") {
+        try {
+            if (req.query.id) {
+                const product = await Product.findById(req.query.id)
+                    .populate('components.item');
+                if (!product) {
+                    return res.status(404).json({ error: "Продукт не знайдено" });
+                }
+                res.status(200).json(product);
+            } else {
+                const products = await Product.find()
+                    .populate('components.item');
+                res.status(200).json(products);
+            }
+        } catch (error) {
+            console.error("Помилка при отриманні виробів:", error);
+            res.status(500).json({ error: "Помилка сервера" });
         }
     }
 
@@ -126,13 +113,13 @@ export default async function handler(req, res) {
         if (req.query.id) {
             try {
                 await Product.deleteOne({ _id: req.query.id });
-                res.json(true);
+                res.status(200).json({ success: true });
             } catch (error) {
-                console.error("Помилка при видаленні продукту:", error);
-                res.status(500).json({ error: "Помилка при видаленні продукту" });
+                console.error("Помилка при видаленні виробу:", error);
+                res.status(500).json({ error: "Помилка при видаленні виробу." });
             }
         } else {
-            res.status(400).json({ error: "Не вказано ID продукту для видалення" });
+            res.status(400).json({ error: "ID виробу не вказано." });
         }
     }
 }

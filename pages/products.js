@@ -26,8 +26,8 @@ const Products = () => {
 
     return (
         <Layout>
-            <AddProduct fetchCompany={fetchCompany} updateProducts={updateProducts} />
-            <ProductTable fetchCompany={fetchCompany} products={products} onUpdate={updateProducts} />
+            <AddProduct fetchProducts={fetchCompany} updateProducts={updateProducts} />
+            <ProductTable fetchProducts={fetchCompany} products={products} onUpdate={updateProducts} />
         </Layout>
     );
 };
