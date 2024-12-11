@@ -16,15 +16,17 @@ export const authOptions = {
     ],
     adapter: MongoDBAdapter(clientPromise),
     callbacks: {
-        session: ({ session, token, user }) => {
-            if (adminEmails.includes(session?.user?.email)) {
-                return session;
-            } else {
-                return false;
-            }
+        async session({ session, user }) {
+            // Получаем пользователя из базы данных
+            const client = await clientPromise;
+            const db = client.db();
+            const userFromDB = await db.collection('users').findOne({ email: session.user.email });
 
-        }
-    }
+            // Добавляем роль в сессию
+            session.user.role = userFromDB?.role || 'user'; // Дефолтная роль — "user"
+            return session;
+        },
+    },
 }
 
 export default NextAuth(authOptions);

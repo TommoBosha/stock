@@ -6,6 +6,7 @@ const ComponentsSchema = new Schema({
     company: [{ type: Schema.Types.ObjectId, ref: 'Company' }],
     invoice: { type: Schema.Types.ObjectId, ref: 'Invoice' },
     quantity: { type: Number },
+    minQuantity: { type: Number },
     images: { type: String },
     comments: { type: String }
 

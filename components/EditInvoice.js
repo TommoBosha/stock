@@ -195,7 +195,7 @@ const EditInvoice = ({ invoice, onUpdate, onCancel }) => {
                                 Кількість
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 value={component.quantity}
                                 onChange={e => handleComponentChange(index, 'quantity', e.target.value)}
                                 placeholder="Кількість"
@@ -207,7 +207,7 @@ const EditInvoice = ({ invoice, onUpdate, onCancel }) => {
                                 Ціна за одиницю
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 value={component.unitPrice}
                                 onChange={e => handleComponentChange(index, 'unitPrice', e.target.value)}
                                 placeholder="Ціна за одиницю"

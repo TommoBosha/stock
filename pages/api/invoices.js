@@ -85,6 +85,7 @@ export default async function handle(req, res) {
               unitPrice: component.unitPrice,
               company: foundCompany._id,
               quantity: component.quantity,
+              minQuantity: component.minQuantity,
             });
             return newComponent;
           }
@@ -100,6 +101,7 @@ export default async function handle(req, res) {
           name: component.name,
           quantity: component.quantity,
           unitPrice: component.unitPrice,
+          minQuantity: component.minQuantity,
           totalPrice: (component.unitPrice * component.quantity).toFixed(2),
         })),
         data,

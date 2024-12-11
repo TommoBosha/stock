@@ -69,7 +69,7 @@ const EditInventoryModal = ({ item, onClose, onUpdate }) => {
                 <div className="form-control">
                     <label>Кількість</label>
                     <input
-                        type="number"
+                        type="text"
                         name="quantity"
                         value={formData.quantity}
                         onChange={handleInputChange}

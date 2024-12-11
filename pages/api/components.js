@@ -11,7 +11,23 @@ export default async function handle(req, res) {
   await isAdminRequest(res, req);
 
   if (method === 'GET') {
-    const { id } = req.query;
+    const { id, name, lowStock  } = req.query;
+
+    try {
+      if (lowStock) {
+        // Отримання компонентів із низькою кількістю
+        const components = await Components.find({
+          $expr: { $lte: ["$quantity", "$minQuantity"] },
+        });
+        return res.json(components);
+      }
+  
+      // Інші варіанти обробки (id, name) залишаються без змін...
+    } catch (error) {
+      console.error("Помилка при отриманні комплектуючих:", error.message);
+      res.status(500).json({ error: "Помилка при отриманні комплектуючих" });
+    }
+
 
     try {
       if (id) {
@@ -27,7 +43,10 @@ export default async function handle(req, res) {
         }
 
         res.json(component);
-      } else {
+      } else if (name) {
+        const components = await Components.find({ name: new RegExp(name, 'i') });
+        res.json(components);
+    } else {
         // Если ID нет, возвращаем все комплектующие
         const components = await Components.find();
         res.json(components);
@@ -46,6 +65,7 @@ export default async function handle(req, res) {
         company,
         invoice,
         countInStock,
+        minQuantity,
         images
       } = req.body;
 
@@ -56,6 +76,7 @@ export default async function handle(req, res) {
         company,
         invoice,
         countInStock,
+        minQuantity,
         images
       });
 
@@ -73,6 +94,7 @@ export default async function handle(req, res) {
         company,
         invoice,
         quantity,
+        minQuantity,
         images,
         _id
       } = req.body;
@@ -91,6 +113,7 @@ export default async function handle(req, res) {
           company,
           invoice,
           quantity,
+          minQuantity,
           images,
         },
         { new: true }

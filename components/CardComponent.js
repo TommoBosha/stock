@@ -119,7 +119,7 @@ const ComponentCard = ({ component, onUpdate }) => {
 
 
                                 <input
-                                    type="number"
+                                    type="text"
                                     name="quantity"
                                     value={formData.quantity}
                                     onChange={handleInputChange}

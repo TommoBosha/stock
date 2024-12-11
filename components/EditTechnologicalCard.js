@@ -86,7 +86,7 @@ const EditTechnologicalCard = ({ item, onUpdate, onCancel }) => {
                         ))}
                     </datalist>
                     <input
-                        type="number"
+                        type="text"
                         value={component.quantity}
                         onChange={(e) => handleComponentsChange(index, "quantity", e.target.value)}
                         placeholder="Кількість"

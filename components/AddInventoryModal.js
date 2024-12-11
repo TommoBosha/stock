@@ -6,7 +6,7 @@ const AddInventoryModal = ({ onItemAdded }) => {
     const [formData, setFormData] = useState({
         name: "",
         serialNumber: "",
-        quantity: 1,
+        quantity: "",
         image: "",
         comment: "",
     });
@@ -87,7 +87,7 @@ const AddInventoryModal = ({ onItemAdded }) => {
                     <div className="form-control">
                         <label>Кількість</label>
                         <input
-                            type="number"
+                            type="text"
                             name="quantity"
                             value={formData.quantity} 
                             onChange={handleInputChange}

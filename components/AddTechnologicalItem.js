@@ -82,7 +82,7 @@ const AddTechnologicalItem = ({ fetchItems }) => {
                                 </datalist>
 
                                 <input
-                                    type="number"
+                                    type="text"
                                     placeholder="Кількість"
                                     value={component.quantity}
                                     onChange={(e) => updateComponent(index, "quantity", e.target.value)}

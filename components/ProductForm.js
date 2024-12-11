@@ -125,14 +125,14 @@ export default function ProductForm({
 
             <label>Ціна зборки</label>
             <input
-                type="number"
+                type="text"
                 value={assemblyPrice}
                 onChange={(e) => setAssemblyPrice(Number(e.target.value))}
             />
 
             <label>Ціна реалізації</label>
             <input
-                type="number"
+                type="text"
                 value={salePrice}
                 onChange={(e) => setSalePrice(Number(e.target.value))}
             />

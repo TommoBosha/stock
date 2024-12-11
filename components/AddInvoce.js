@@ -159,7 +159,7 @@ const AddInvoice = ({ fetchInvoice }) => {
         setFormData({ ...formData, components: updatedComponents });
     };
 
-    const handleComponentChange = (index, field, value) => {
+    const handleComponentChange = async (index, field, value) => {
         const updatedComponents = [...formData.components];
     
        
@@ -175,6 +175,18 @@ const AddInvoice = ({ fetchInvoice }) => {
             const unitPrice = parseFloat(updatedComponents[index]['unitPrice'].replace(',', '.')) || 0;
             updatedComponents[index]['totalPrice'] = (quantity * unitPrice).toFixed(2);
         }
+
+        if (field === 'name') {
+            // Перевірка, чи існує компонент у базі
+            const res = await axios.get(`/api/components?name=${encodeURIComponent(value)}`);
+            if (res.data.length === 0) {
+                // Якщо компонент не знайдено, додаємо поле `minQuantity`
+                updatedComponents[index]['minQuantity'] = "";
+            } else {
+                delete updatedComponents[index]['minQuantity'];
+            }
+        }
+    
     
         setFormData({ ...formData, components: updatedComponents });
     };
@@ -196,13 +208,14 @@ const AddInvoice = ({ fetchInvoice }) => {
                 company: selectedCompany._id,
                 components: formData.components.map(component => ({
                     name: component.name,
-                    quantity: component.quantity,
-                    unitPrice: component.unitPrice,
-                    totalPrice: component.totalPrice,
-                })),
-                ...(formData.discount ? { discount: formData.discount, discountValue: formData.discountValue } : {}),
+                quantity: component.quantity,
+                unitPrice: component.unitPrice,
+                totalPrice: component.totalPrice,
+                ...(component.minQuantity ? { minQuantity: component.minQuantity } : {}), // Добавляем minQuantity
+            })),
+            ...(formData.discount ? { discount: formData.discount, discountValue: formData.discountValue } : {}),
             };
-
+            console.log("Данные, отправляемые в API:", dataToSend);
             if (!formData.withVAT) {
                 delete dataToSend.totalPriceWithVAT;
                 delete dataToSend.VAT;
@@ -326,6 +339,15 @@ const AddInvoice = ({ fetchInvoice }) => {
                                     onChange={(e) => handleComponentChange(index, 'quantity', e.target.value)}
                                     className="input input-bordered w-full"
                                 />
+                                {component.minQuantity !== undefined && (
+    <input
+        type="text"
+        placeholder="Мінімальна кількість"
+        value={component.minQuantity}
+        onChange={(e) => handleComponentChange(index, 'minQuantity', e.target.value)}
+        className="input input-bordered w-full"
+    />
+)}
                                 <input
                                     type="text"
                                     placeholder="Ціна за одиницю"

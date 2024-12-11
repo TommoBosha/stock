@@ -135,7 +135,7 @@ const AddProduct = ({ fetchProducts }) => {
                    
                     <label>Ціна зборки:</label>
                     <input
-                        type="number"
+                        type="text"
                         className="input input-bordered w-full"
                         value={assemblyPrice}
                         onChange={(e) => setAssemblyPrice(e.target.value)}
@@ -145,7 +145,7 @@ const AddProduct = ({ fetchProducts }) => {
                    
                     <label>Ціна реалізації:</label>
                     <input
-                        type="number"
+                        type="text"
                         className="input input-bordered w-full"
                         value={salePrice}
                         onChange={(e) => setSalePrice(e.target.value)}

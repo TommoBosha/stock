@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import Pagination from "./Pagination";
 import Spinner from "./Spinner";
+// import { useSession } from "next-auth/react";
 
 const defaultImage =
     "https://res.cloudinary.com/dzu849usg/image/upload/v1714332733/33-154-prokladka-98347104279697_drjc2p.webp";
@@ -14,10 +15,15 @@ const ComponentTable = ({ components, onUpdate, companies }) => {
         unitPrice: "",
         quantity: "",
         images: "",
+        minQuantity: "",
     });
     const [imagesLoading, setImagesLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [componentsPerPage] = useState(10);
+
+    // const { data: session } = useSession();
+
+    // console.log(session)
 
     const handleEdit = (component) => {
         setEditingComponentId(component._id);
@@ -25,6 +31,7 @@ const ComponentTable = ({ components, onUpdate, companies }) => {
             name: component.name,
             unitPrice: component.unitPrice,
             quantity: component.quantity,
+            minQuantity:component.minQuantity,
             images: component.images || defaultImage,
         });
     };
@@ -120,6 +127,7 @@ const ComponentTable = ({ components, onUpdate, companies }) => {
                         <th>Ціна</th>
                         <th>Кількість на складі</th>
                         <th>Компанії постачальники</th>
+                        <th>Мінімальна кількість</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -188,10 +196,26 @@ const ComponentTable = ({ components, onUpdate, companies }) => {
                                     component.quantity
                                 )}
                             </td>
+
+                           
                             <td>
                                 {getCompaniesForComponent(component.company)}
                             </td>
 
+                            <td>
+    {editingComponentId === component._id ? (
+        <input
+            type="text"
+            name="minQuantity"
+            value={formData.minQuantity ?? component.minQuantity ?? ""}
+            onChange={handleInputChange}
+        />
+    ) : (
+        component.minQuantity || "Немає даних"
+    )}
+</td>
+
+                            {/* {session?.user?.role === 'admin' && ( */}
                             <td>
                                 {editingComponentId === component._id ? (
                                     <button
@@ -236,6 +260,7 @@ const ComponentTable = ({ components, onUpdate, companies }) => {
                                     </button>
                                 )}
                             </td>
+                            {/* )} */}
                         </tr>
                     ))}
                 </tbody>

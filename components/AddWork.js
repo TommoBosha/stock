@@ -146,7 +146,7 @@ const AddWork = ({ fetchWorkDays }) => {
                                         ))}
                                     </datalist>
                                     <input
-                                        type="number"
+                                        type="text"
                                         placeholder="Кількість"
                                         value={product.quantity}
                                         onChange={e => updateProduct(index, 'quantity', parseInt(e.target.value))}
