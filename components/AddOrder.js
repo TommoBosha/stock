@@ -7,9 +7,9 @@ const AddOrder = ({ fetchOrders }) => {
         data: "",
         client: "",
         products: [],
-
         totalPrice: "",
         isPaid: "",
+        comment: "",
     });
     const [clients, setClients] = useState([]);
     const [filteredClients, setFilteredClients] = useState([]);
@@ -31,8 +31,13 @@ const AddOrder = ({ fetchOrders }) => {
     const fetchProducts = async () => {
         try {
             const res = await axios.get("/api/products");
-            console.log(res.data)
-            setProductOptions(res.data.map(product => ({ id: product._id, name: product.name })));
+            setProductOptions(
+                res.data.map(product => ({
+                    id: product._id,
+                    name: product.name,
+                    salePrice: product.salePrice,
+                }))
+            );
         } catch (error) {
             console.error("Помилка при отриманні списку продуктів:", error);
         }
@@ -82,8 +87,8 @@ const AddOrder = ({ fetchOrders }) => {
         const newProduct = {
             name: '',
             quantity: 0,
+            salePrice: '',
         };
-        console.log(newProduct)
         setFormData({ ...formData, products: [...formData.products, newProduct] });
     };
 
@@ -93,28 +98,46 @@ const AddOrder = ({ fetchOrders }) => {
         setFormData({ ...formData, products: updatedProducts });
     };
 
-    const handleProductChange = (index, field, value, productId) => {
+    const handleProductChange = (index, field, value) => {
         const updatedProducts = [...formData.products];
         updatedProducts[index][field] = value;
-        console.log(updatedProducts)
+
         if (field === 'name') {
-            updatedProducts[index].product = productId;
+            const selectedProduct = productOptions.find((product) => product.name === value);
+            if (selectedProduct) {
+                updatedProducts[index].product = selectedProduct.id;
+                updatedProducts[index].salePrice = selectedProduct.salePrice;
+            }
         }
+
         setFormData({ ...formData, products: updatedProducts });
     };
 
+    useEffect(() => {
+        const calculateTotalPrice = () => {
+            const total = formData.products.reduce((sum, product) => {
+                const price = parseFloat(product.salePrice) || 0;
+                const quantity = parseInt(product.quantity, 10) || 0;
+                return sum + price * quantity;
+            }, 0);
+            setFormData((prevState) => ({ ...prevState, totalPrice: total.toFixed(2) }));
+        };
+
+        calculateTotalPrice();
+    }, [formData.products]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData.products)
-
 
         try {
             const dataToSend = {
                 ...formData,
                 data: formData.data,
                 products: formData.products.map(product => ({
+                    product: product.product,
                     name: product.name,
                     quantity: product.quantity,
+                    salePrice: product.salePrice,
                 })),
             };
 
@@ -129,6 +152,7 @@ const AddOrder = ({ fetchOrders }) => {
                     data: "",
                     totalPrice: "",
                     isPaid: "",
+                    comment: "",
                 });
                 setInputValue('');
 
@@ -142,7 +166,7 @@ const AddOrder = ({ fetchOrders }) => {
     return (
         <div className="py-8">
             <button
-                className="btn"
+                className="btn btn-accent"
                 onClick={() => document.getElementById("order_modal").showModal()}
             >
                 Додати замовлення
@@ -194,7 +218,7 @@ const AddOrder = ({ fetchOrders }) => {
                         />
 
                         {formData.products.map((product, index) => (
-                            <div key={index} className="grid grid-cols-3 gap-4">
+                            <div key={index} className="grid grid-cols-1  gap-4">
                                 <input
                                     type="text"
                                     placeholder="Назва продукту"
@@ -215,6 +239,13 @@ const AddOrder = ({ fetchOrders }) => {
                                     onChange={(e) => handleProductChange(index, 'quantity', e.target.value)}
                                     className="input input-bordered w-full"
                                 />
+                                <input
+                                    type="text"
+                                    placeholder="Ціна реалізації"
+                                    value={product.salePrice || ""}
+                                    onChange={(e) => handleProductChange(index, 'salePrice', e.target.value)}
+                                    className="input input-bordered w-full"
+                                />
                             </div>
                         ))}
                         <button type="button" className="btn btn-outline mr-1" onClick={handleAddProduct}>
@@ -225,14 +256,21 @@ const AddOrder = ({ fetchOrders }) => {
                             Скасувати додавання продукту
                         </button>
 
+                        <textarea
+                            name="comment"
+                            placeholder="Коментар"
+                            className="textarea textarea-bordered w-full mt-4"
+                            value={formData.comment}
+                            onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                        />
+
                         <input
                             type="text"
                             name="totalPrice"
                             placeholder="Загальна ціна"
                             className="input input-bordered w-full mt-4"
                             value={formData.totalPrice}
-                            onChange={(e) => setFormData({ ...formData, totalPrice: e.target.value })}
-                            required
+                            readOnly
                         />
 
                         <select

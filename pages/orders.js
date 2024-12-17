@@ -127,7 +127,7 @@ const OrdersPage = ({ swal }) => {
           </thead>
           <tbody>
             {currentOrders.map((order) => (
-              <tr key={order._id}>
+              <tr key={order._id} className="hover">
                 <td>
                   <EditableCell
                     initialValue={order.orderNumber}

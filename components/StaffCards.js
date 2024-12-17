@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import EditStaffModal from "./EditStaffModal";
 import { withSwal } from "react-sweetalert2";
 import axios from "axios";
+import Link from "next/link";
 
 const StaffCards = ({ staff, tools, onUpdate, swal }) => {
     const [editingStaff, setEditingStaff] = useState(null);
@@ -31,28 +32,39 @@ const StaffCards = ({ staff, tools, onUpdate, swal }) => {
         <>
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${editingStaff ? 'hidden' : ''}`}>
                 {staff.map((worker) => (
-                    <div key={worker._id} className="card shadow-lg">
-                        <div className="card-body bg-white rounded-lg">
-                            <h2 className="card-title">{worker.fullName}</h2>
-                            <p>Цех: {worker.department}</p>
-                            <p>Обов&apos;язки: {worker.duties}</p>
-                            <p>Закріплений інструмент: {worker.assignedTool?.name || "Немає"}</p>
-                            <div className="card-actions justify-end mt-3">
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => setEditingStaff(worker)}
-                                >
-                                    Редагувати
-                                </button>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDelete(worker._id)}
-                                >
-                                    Видалити
-                                </button>
+                    <Link key={worker._id} href={`/staff/${worker._id}`}>
+                       
+                        <div className="card shadow-lg cursor-pointer">
+                            <div className="card-body bg-white rounded-lg">
+                                <h2 className="card-title">{worker.fullName}</h2>
+                                <p>Цех: {worker.department}</p>
+                                <p>Обов&apos;язки: {worker.duties}</p>
+                                <p>Закріплений інструмент: {worker.assignedTool?.name || "Немає"}</p>
+                                <div className="card-actions justify-end mt-3">
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); 
+                                            e.preventDefault(); 
+                                            setEditingStaff(worker);
+                                        }}
+                                    >
+                                        Редагувати
+                                    </button>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            handleDelete(worker._id);
+                                        }}
+                                    >
+                                        Видалити
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
             {editingStaff && (
@@ -68,4 +80,5 @@ const StaffCards = ({ staff, tools, onUpdate, swal }) => {
 };
 
 export default withSwal(StaffCards);
+
 

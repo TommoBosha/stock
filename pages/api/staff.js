@@ -1,14 +1,20 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { Staff } from "@/models/Staff";
+import { Inventory } from "@/models/Inventory";
 
 export default async function handler(req, res) {
     const { method } = req;
     await mongooseConnect();
 
     if (method === "GET") {
-        const staff = await Staff.find().populate("assignedTool");
-        res.json(staff);
-    }
+        if (req.query.id) {
+          const staffMember = await Staff.findById(req.query.id).populate("assignedTool");
+          return res.json(staffMember);
+        } else {
+          const staff = await Staff.find().populate("assignedTool");
+          res.json(staff);
+        }
+      }
 
     if (method === "POST") {
         const newStaff = await Staff.create(req.body);

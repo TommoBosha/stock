@@ -256,7 +256,7 @@ const AddInvoice = ({ fetchInvoice }) => {
     return (
         <div className="py-8">
             <button
-                className="btn"
+                className="btn btn-accent"
                 onClick={() => document.getElementById("my_modal_5").showModal()}
             >
                 Додати накладну

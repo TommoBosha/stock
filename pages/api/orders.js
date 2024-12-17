@@ -36,7 +36,18 @@ export default async function handle(req, res) {
 
     try {
       const newOrder = new Order({
-        client, data, products, totalPrice, isPaid, comment, orderNumber
+        client,
+      data,
+      products: products.map((product) => ({
+        product: product.product,
+        name: product.name,
+        quantity: product.quantity,
+        salePrice: product.salePrice, // Збереження ціни реалізації
+      })),
+      totalPrice,
+      isPaid,
+      comment,
+      orderNumber,
       });
 
       const savedOrder = await Order.create(newOrder).then(savedOrder => {
