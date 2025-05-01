@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
@@ -22,6 +23,9 @@ const AddInvoice = ({ fetchInvoice }) => {
     const [componentOptions, setComponentOptions] = useState([]);
     const [ibanOptions, setIbanOptions] = useState({});
     const [selectedIban, setSelectedIban] = useState("");
+
+    const [debouncedComponentName, setDebouncedComponentName] = useState("");
+    const [componentIndexToCheck, setComponentIndexToCheck] = useState(null);
 
     const inputRef = useRef(null);
 
@@ -108,27 +112,12 @@ const AddInvoice = ({ fetchInvoice }) => {
         setFilteredCompanies(filtered);
     };
 
-    const handleCompanySelect = (companyId, companyName, companyIBAN) => {
+    const handleCompanySelect = (companyId, companyName) => {
         setInputValue(companyName);
-
-        const updatedCompanies = Array.isArray(formData.companies) ? [...formData.companies] : [];
-
-        const companyIndex = updatedCompanies.findIndex(company => company._id === companyId);
-
-        if (companyIndex === -1) {
-            updatedCompanies.push({ _id: companyId, name: companyName });
-        }
-
-        setFormData(prevState => ({
-            ...prevState,
-            companies: updatedCompanies
-        }));
-
         setFormData(prevState => ({
             ...prevState,
             company: companyId
         }));
-
         setShowDropdown(false);
 
         const updatedComponents = formData.components.map(component => ({
@@ -159,44 +148,66 @@ const AddInvoice = ({ fetchInvoice }) => {
         setFormData({ ...formData, components: updatedComponents });
     };
 
-    const handleComponentChange = async (index, field, value) => {
-        const updatedComponents = [...formData.components];
-    
-       
-        if (field === 'quantity' || field === 'unitPrice') {
-            value = value.replace(',', '.'); 
-        }
-    
-        updatedComponents[index][field] = value;
-    
-        
-        if (field === 'quantity' || field === 'unitPrice') {
-            const quantity = parseFloat(updatedComponents[index]['quantity'].replace(',', '.')) || 0;
-            const unitPrice = parseFloat(updatedComponents[index]['unitPrice'].replace(',', '.')) || 0;
-            updatedComponents[index]['totalPrice'] = (quantity * unitPrice).toFixed(2);
-        }
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (debouncedComponentName && componentIndexToCheck !== null) {
+                checkComponentExists(debouncedComponentName, componentIndexToCheck);
+            }
+        }, 500);
 
-        if (field === 'name') {
-            // Перевірка, чи існує компонент у базі
-            const res = await axios.get(`/api/components?name=${encodeURIComponent(value)}`);
+        return () => clearTimeout(timeout);
+    }, [debouncedComponentName, componentIndexToCheck]);
+
+    const checkComponentExists = async (name, index) => {
+        try {
+            const res = await axios.get(`/api/components?name=${encodeURIComponent(name)}`);
+            const updatedComponents = [...formData.components];
+
             if (res.data.length === 0) {
-                // Якщо компонент не знайдено, додаємо поле `minQuantity`
                 updatedComponents[index]['minQuantity'] = "";
             } else {
                 delete updatedComponents[index]['minQuantity'];
             }
+
+            setFormData(prev => ({
+                ...prev,
+                components: updatedComponents
+            }));
+        } catch (err) {
+            console.error("Помилка перевірки компонента:", err);
         }
-    
-    
-        setFormData({ ...formData, components: updatedComponents });
     };
 
+    const handleComponentChange = (index, field, value) => {
+        const updatedComponents = [...formData.components];
+
+        if (field === 'quantity' || field === 'unitPrice') {
+            value = value.replace(',', '.');
+        }
+
+        updatedComponents[index][field] = value;
+
+        if (field === 'quantity' || field === 'unitPrice') {
+            const quantity = parseFloat(updatedComponents[index]['quantity']?.replace(',', '.') || 0);
+            const unitPrice = parseFloat(updatedComponents[index]['unitPrice']?.replace(',', '.') || 0);
+            updatedComponents[index]['totalPrice'] = (quantity * unitPrice).toFixed(2);
+        }
+
+        if (field === 'name') {
+            setDebouncedComponentName(value);
+            setComponentIndexToCheck(index);
+        }
+
+        setFormData(prev => ({
+            ...prev,
+            components: updatedComponents
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-
             const selectedCompany = companies.find((company) => company._id === formData.company);
             if (!selectedCompany) {
                 console.error("Компанія не знайдена");
@@ -208,29 +219,25 @@ const AddInvoice = ({ fetchInvoice }) => {
                 company: selectedCompany._id,
                 components: formData.components.map(component => ({
                     name: component.name,
-                quantity: component.quantity,
-                unitPrice: component.unitPrice,
-                totalPrice: component.totalPrice,
-                ...(component.minQuantity ? { minQuantity: component.minQuantity } : {}), // Добавляем minQuantity
-            })),
-            ...(formData.discount ? { discount: formData.discount, discountValue: formData.discountValue } : {}),
+                    quantity: component.quantity,
+                    unitPrice: component.unitPrice,
+                    totalPrice: component.totalPrice,
+                    ...(component.minQuantity ? { minQuantity: component.minQuantity } : {}),
+                })),
+                ...(formData.discount ? { discount: formData.discount, discountValue: formData.discountValue } : {}),
             };
-            console.log("Данные, отправляемые в API:", dataToSend);
+
             if (!formData.withVAT) {
                 delete dataToSend.totalPriceWithVAT;
                 delete dataToSend.VAT;
                 delete dataToSend.priceWithoutVAT;
             }
 
-
             const res = await axios.post("/api/invoices", dataToSend);
 
             if (res.status === 200) {
-
                 fetchInvoice();
-
                 fetchComponents();
-
                 setFormData({
                     invoceNumber: "",
                     company: "",
@@ -245,7 +252,6 @@ const AddInvoice = ({ fetchInvoice }) => {
                     discountValue: "",
                 });
                 setInputValue('');
-
                 document.getElementById("my_modal_5").close();
             }
         } catch (error) {
@@ -340,14 +346,14 @@ const AddInvoice = ({ fetchInvoice }) => {
                                     className="input input-bordered w-full"
                                 />
                                 {component.minQuantity !== undefined && (
-    <input
-        type="text"
-        placeholder="Мінімальна кількість"
-        value={component.minQuantity}
-        onChange={(e) => handleComponentChange(index, 'minQuantity', e.target.value)}
-        className="input input-bordered w-full"
-    />
-)}
+                                    <input
+                                        type="text"
+                                        placeholder="Мінімальна кількість"
+                                        value={component.minQuantity}
+                                        onChange={(e) => handleComponentChange(index, 'minQuantity', e.target.value)}
+                                        className="input input-bordered w-full"
+                                    />
+                                )}
                                 <input
                                     type="text"
                                     placeholder="Ціна за одиницю"
