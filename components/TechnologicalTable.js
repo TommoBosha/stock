@@ -29,9 +29,10 @@ const TechnologicalTable = ({ items, fetchItems, swal }) => {
     };
 
     const handleUpdate = (updatedItem) => {
-        fetchItems(); 
-        setEditingItem(null); 
+        fetchItems();
+        setEditingItem(null);
     };
+
 
     return (
         <>
@@ -54,7 +55,7 @@ const TechnologicalTable = ({ items, fetchItems, swal }) => {
                             <button
                                 className="btn btn-primary"
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     setEditingItem(item);
                                 }}
                             >
@@ -63,7 +64,7 @@ const TechnologicalTable = ({ items, fetchItems, swal }) => {
                             <button
                                 className="btn btn-danger"
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     handleDelete(item._id);
                                 }}
                             >

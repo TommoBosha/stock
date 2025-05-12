@@ -24,8 +24,15 @@ export default async function handler(req, res) {
     await mongooseConnect();
 
     if (method === "GET") {
-        const techProcesses = await TechProcess.find().populate('components.item');
-        res.json(techProcesses);
+        const { id } = req.query;
+        if (id) {
+
+            const techProcess = await TechProcess.findById(id).populate('components.item');
+            res.json(techProcess);
+        } else {
+            const techProcesses = await TechProcess.find().populate('components.item');
+            res.json(techProcesses);
+        }
     }
 
     if (method === "POST") {

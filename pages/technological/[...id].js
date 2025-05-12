@@ -26,7 +26,7 @@ const TechnologicalItemPage = () => {
     const fetchItem = async () => {
         try {
             const response = await axios.get(`/api/technological?id=${id}`);
-            setItem(response.data[0]);
+            setItem(response.data);
         } catch (error) {
             console.error('Помилка при отриманні даних:', error);
         } finally {
@@ -95,7 +95,7 @@ const TechnologicalItemPage = () => {
             flex: 1,
             fontSize: 12,
             padding: 5,
-            textAlign: 'center', 
+            textAlign: 'center',
         },
         headerCell: {
             fontWeight: 'bold',
@@ -122,10 +122,10 @@ const TechnologicalItemPage = () => {
     return (
         <Layout>
             <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
-             
+
                 <h1 className="text-3xl font-bold text-center mb-6">{item.name.toUpperCase()}</h1>
 
-               
+
                 <div className="border border-gray-300 mb-6">
                     <div className="grid grid-cols-3 bg-gray-200 border-b border-gray-300 font-bold text-center">
                         <div className="p-2">Назва комплектуючої</div>

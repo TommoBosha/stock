@@ -37,6 +37,12 @@ const AddTechnologicalItem = ({ fetchItems }) => {
 
     const updateComponent = (index, key, value) => {
         const newComponents = [...components];
+
+        if (key === 'quantity') {
+            value = value.replace(',', '.');
+        }
+
+
         newComponents[index][key] = value;
         setComponents(newComponents);
     };
